@@ -23,5 +23,11 @@
     <Setting Name="CurrentModel" Type="System.String" Scope="User">
       <Value Profile="(Default)">trafficsign.onnx</Value>
     </Setting>
+    <Setting Name="Mode" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="Loop" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

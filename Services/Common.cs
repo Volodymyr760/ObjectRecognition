@@ -182,6 +182,25 @@ namespace ObjectsRecognition.Services
             return image;
         }
 
+        public Bitmap OverlayImages(Bitmap background, Bitmap overlay, Point location)
+        {
+            // Clone background to avoid modifying the original
+            Bitmap result = new Bitmap(background.Width, background.Height);
+
+            using (Graphics g = Graphics.FromImage(result))
+            {
+                // Draw the base image
+                //g.DrawImage(background, 0, 0);
+
+                // Draw the overlay at specific coordinates
+                // Ensure overlay has transparency (e.g., PNG) to see the background beneath it
+                g.DrawImage(overlay, location);
+            }
+
+            return result;
+        }
+
+
         private void TargetForecast(Coords previous, Coords current) =>
              target = new Coords(current.X + (current.X - previous.X), current.Y + (current.Y - previous.Y));
     }

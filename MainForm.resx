@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
-    Microsoft ResX Schema 
+    Microsoft ResX Schema
 
     Version 2.0
 
@@ -48,7 +48,7 @@
     value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
     value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="btnSettings.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="btnSettings.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -137,9 +134,6 @@
         6sfELfkVbPTHxCXU3y9/w1K/Zt59cpndJ02r9Qe3+KbyBqLg+gAAAABJRU5ErkJggg==
 </value>
   </data>
-  <metadata name="btnCamera.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
   <data name="btnCamera.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAbxJREFUWEft
@@ -153,10 +147,7 @@
         3mLSQ6lsWLEOpRkZLcBxvgG7JgjWgkvloQAAAABJRU5ErkJggg==
 </value>
   </data>
-  <metadata name="btnPlayVideo.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <data name="btnPlayVideo.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="btnVideo.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAbtJREFUWEft
         l0svA1EYhou6pBK3tE0krLFhIxFbawvCAj+gKxLhP4gtwkJsEJduurUg/pNfwPP2fDM5pdNpOzONhCd5
@@ -167,19 +158,6 @@
         Ch2SuAFd2zHUde6GyAb8t2HelTIhbzHKadgHHqyugQpu4k7Kas2KxSjnDkNOrd4zyNSuGbKEFzaWOWSd
         4aKCA0ZwHoNTr1etf/rW8dyOj0Vz7Rh/jWBNZcxhxzfyhq0fi+a6Q9Jl09aPRXPdIemiU6YfF61+tATj
         3e4TkUS9XFrRzTF/jlzuCwAQIiWgt3FGAAAAAElFTkSuQmCC
-</value>
-  </data>
-  <metadata name="btnFiles.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="btnLeftMenu.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <data name="btnLeftMenu.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAEtJREFUWEft
-        1DEKwDAQA8H7WD6fjzltigU1OnCxA1uqMYdHksBZLqJRs+hdTvd7lovocptFNGoW0bM10/3o+2wW0eU2
-        i2jUTJJ+Zj4/i79BJ0U5lwAAAABJRU5ErkJggg==
 </value>
   </data>
 </root>

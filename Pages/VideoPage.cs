@@ -3,9 +3,7 @@ using Emgu.CV.Structure;
 using ObjectsRecognition.Models;
 using ObjectsRecognition.Services;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Timers;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace ObjectsRecognition.Pages
 {
@@ -48,7 +46,6 @@ namespace ObjectsRecognition.Pages
                 "Twice/sec" => 500,
                 _ => 0,
             };
-            var test = Properties.Settings.Default["IsAutoMode"].ToString();
             isAutoMode = bool.Parse(Properties.Settings.Default["IsAutoMode"].ToString());
             Text = isAutoMode ? "Video: Auto Save Mode"
                 : "Video: Play Mode";

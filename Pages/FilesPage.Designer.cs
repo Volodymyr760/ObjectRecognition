@@ -47,6 +47,7 @@
             // RtxtResults
             // 
             RtxtResults.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            RtxtResults.BorderStyle = BorderStyle.None;
             RtxtResults.Location = new Point(12, 82);
             RtxtResults.Name = "RtxtResults";
             RtxtResults.Size = new Size(1157, 433);

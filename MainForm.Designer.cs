@@ -32,14 +32,10 @@
             panelMenu = new Panel();
             btnSettings = new Button();
             btnCamera = new Button();
-            btnPlayVideo = new Button();
+            btnVideo = new Button();
             btnFiles = new Button();
-            btnLeftMenu = new Button();
-            panelTitle = new Panel();
-            lblTitle = new Label();
             panelDesktop = new Panel();
             panelMenu.SuspendLayout();
-            panelTitle.SuspendLayout();
             SuspendLayout();
             // 
             // panelMenu
@@ -47,165 +43,112 @@
             panelMenu.BackColor = Color.Purple;
             panelMenu.Controls.Add(btnSettings);
             panelMenu.Controls.Add(btnCamera);
-            panelMenu.Controls.Add(btnPlayVideo);
+            panelMenu.Controls.Add(btnVideo);
             panelMenu.Controls.Add(btnFiles);
-            panelMenu.Controls.Add(btnLeftMenu);
             panelMenu.Dock = DockStyle.Left;
             panelMenu.Location = new Point(0, 0);
             panelMenu.Name = "panelMenu";
-            panelMenu.Size = new Size(250, 581);
+            panelMenu.Size = new Size(70, 669);
             panelMenu.TabIndex = 0;
             // 
             // btnSettings
             // 
-            btnSettings.Dock = DockStyle.Top;
             btnSettings.FlatAppearance.BorderSize = 0;
             btnSettings.FlatStyle = FlatStyle.Flat;
-            btnSettings.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            btnSettings.Font = new Font("Segoe UI", 7.8F, FontStyle.Bold, GraphicsUnit.Point, 204);
             btnSettings.ForeColor = Color.WhiteSmoke;
             btnSettings.Image = (Image)resources.GetObject("btnSettings.Image");
-            btnSettings.ImageAlign = ContentAlignment.MiddleLeft;
-            btnSettings.Location = new Point(0, 226);
+            btnSettings.ImageAlign = ContentAlignment.TopCenter;
+            btnSettings.Location = new Point(0, 198);
             btnSettings.Name = "btnSettings";
-            btnSettings.Padding = new Padding(10, 0, 0, 0);
-            btnSettings.Size = new Size(250, 60);
+            btnSettings.Size = new Size(70, 60);
             btnSettings.TabIndex = 6;
-            btnSettings.Text = "   Settings";
-            btnSettings.TextImageRelation = TextImageRelation.ImageBeforeText;
+            btnSettings.Text = "Settings";
+            btnSettings.TextAlign = ContentAlignment.BottomCenter;
             btnSettings.UseVisualStyleBackColor = true;
             btnSettings.Click += btnSettings_Click;
             // 
             // btnCamera
             // 
-            btnCamera.Dock = DockStyle.Top;
             btnCamera.FlatAppearance.BorderSize = 0;
             btnCamera.FlatStyle = FlatStyle.Flat;
-            btnCamera.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            btnCamera.Font = new Font("Segoe UI", 7.8F, FontStyle.Bold, GraphicsUnit.Point, 204);
             btnCamera.ForeColor = Color.WhiteSmoke;
             btnCamera.Image = (Image)resources.GetObject("btnCamera.Image");
-            btnCamera.ImageAlign = ContentAlignment.MiddleLeft;
-            btnCamera.Location = new Point(0, 166);
+            btnCamera.ImageAlign = ContentAlignment.TopCenter;
+            btnCamera.Location = new Point(0, 0);
             btnCamera.Name = "btnCamera";
-            btnCamera.Padding = new Padding(10, 0, 0, 0);
-            btnCamera.Size = new Size(250, 60);
+            btnCamera.Padding = new Padding(0, 5, 0, 0);
+            btnCamera.Size = new Size(70, 60);
             btnCamera.TabIndex = 5;
-            btnCamera.Text = "   Camera";
-            btnCamera.TextImageRelation = TextImageRelation.ImageBeforeText;
+            btnCamera.Text = "Camera";
+            btnCamera.TextAlign = ContentAlignment.BottomCenter;
             btnCamera.UseVisualStyleBackColor = true;
             btnCamera.Click += btnCamera_Click;
             // 
-            // btnPlayVideo
+            // btnVideo
             // 
-            btnPlayVideo.Dock = DockStyle.Top;
-            btnPlayVideo.FlatAppearance.BorderSize = 0;
-            btnPlayVideo.FlatStyle = FlatStyle.Flat;
-            btnPlayVideo.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            btnPlayVideo.ForeColor = Color.WhiteSmoke;
-            btnPlayVideo.Image = (Image)resources.GetObject("btnPlayVideo.Image");
-            btnPlayVideo.ImageAlign = ContentAlignment.MiddleLeft;
-            btnPlayVideo.Location = new Point(0, 106);
-            btnPlayVideo.Name = "btnPlayVideo";
-            btnPlayVideo.Padding = new Padding(10, 0, 0, 0);
-            btnPlayVideo.Size = new Size(250, 60);
-            btnPlayVideo.TabIndex = 3;
-            btnPlayVideo.Text = "   Video";
-            btnPlayVideo.TextImageRelation = TextImageRelation.ImageBeforeText;
-            btnPlayVideo.UseVisualStyleBackColor = true;
-            btnPlayVideo.Click += btnPlayVideo_Click;
+            btnVideo.FlatAppearance.BorderSize = 0;
+            btnVideo.FlatStyle = FlatStyle.Flat;
+            btnVideo.Font = new Font("Segoe UI", 7.8F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            btnVideo.ForeColor = Color.WhiteSmoke;
+            btnVideo.Image = (Image)resources.GetObject("btnVideo.Image");
+            btnVideo.ImageAlign = ContentAlignment.TopCenter;
+            btnVideo.Location = new Point(0, 66);
+            btnVideo.Name = "btnVideo";
+            btnVideo.Size = new Size(70, 60);
+            btnVideo.TabIndex = 3;
+            btnVideo.Text = "Video";
+            btnVideo.TextAlign = ContentAlignment.BottomCenter;
+            btnVideo.UseVisualStyleBackColor = true;
+            btnVideo.Click += btnPlayVideo_Click;
             // 
             // btnFiles
             // 
-            btnFiles.Dock = DockStyle.Top;
+            btnFiles.BackColor = Color.Purple;
             btnFiles.FlatAppearance.BorderSize = 0;
             btnFiles.FlatStyle = FlatStyle.Flat;
-            btnFiles.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            btnFiles.Font = new Font("Segoe UI", 7.8F, FontStyle.Bold, GraphicsUnit.Point, 204);
             btnFiles.ForeColor = Color.WhiteSmoke;
             btnFiles.Image = Properties.Resources.folder_open;
-            btnFiles.ImageAlign = ContentAlignment.MiddleLeft;
-            btnFiles.Location = new Point(0, 46);
+            btnFiles.ImageAlign = ContentAlignment.TopCenter;
+            btnFiles.Location = new Point(0, 132);
             btnFiles.Name = "btnFiles";
-            btnFiles.Padding = new Padding(10, 0, 0, 0);
-            btnFiles.Size = new Size(250, 60);
+            btnFiles.Size = new Size(70, 60);
             btnFiles.TabIndex = 2;
-            btnFiles.Text = "   Files";
-            btnFiles.TextImageRelation = TextImageRelation.ImageBeforeText;
-            btnFiles.UseVisualStyleBackColor = true;
+            btnFiles.Text = "Files";
+            btnFiles.TextAlign = ContentAlignment.BottomCenter;
+            btnFiles.UseVisualStyleBackColor = false;
             btnFiles.Click += btnFiles_Click;
-            // 
-            // btnLeftMenu
-            // 
-            btnLeftMenu.BackColor = Color.White;
-            btnLeftMenu.Dock = DockStyle.Top;
-            btnLeftMenu.FlatAppearance.BorderSize = 0;
-            btnLeftMenu.FlatStyle = FlatStyle.Flat;
-            btnLeftMenu.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            btnLeftMenu.ForeColor = Color.Gainsboro;
-            btnLeftMenu.Image = (Image)resources.GetObject("btnLeftMenu.Image");
-            btnLeftMenu.ImageAlign = ContentAlignment.MiddleLeft;
-            btnLeftMenu.Location = new Point(0, 0);
-            btnLeftMenu.Name = "btnLeftMenu";
-            btnLeftMenu.Padding = new Padding(10, 0, 0, 0);
-            btnLeftMenu.Size = new Size(250, 46);
-            btnLeftMenu.TabIndex = 1;
-            btnLeftMenu.TextImageRelation = TextImageRelation.ImageBeforeText;
-            btnLeftMenu.UseVisualStyleBackColor = false;
-            btnLeftMenu.Click += btnLeftMenu_Click;
-            // 
-            // panelTitle
-            // 
-            panelTitle.BackColor = Color.DarkGray;
-            panelTitle.Controls.Add(lblTitle);
-            panelTitle.Dock = DockStyle.Top;
-            panelTitle.Location = new Point(250, 0);
-            panelTitle.Name = "panelTitle";
-            panelTitle.Size = new Size(976, 46);
-            panelTitle.TabIndex = 2;
-            // 
-            // lblTitle
-            // 
-            lblTitle.AutoSize = true;
-            lblTitle.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            lblTitle.ForeColor = Color.WhiteSmoke;
-            lblTitle.Location = new Point(23, 9);
-            lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(65, 28);
-            lblTitle.TabIndex = 0;
-            lblTitle.Text = "Home";
             // 
             // panelDesktop
             // 
-            panelDesktop.Dock = DockStyle.Fill;
-            panelDesktop.Location = new Point(250, 46);
+            panelDesktop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelDesktop.Location = new Point(70, 0);
             panelDesktop.Name = "panelDesktop";
-            panelDesktop.Size = new Size(976, 535);
+            panelDesktop.Size = new Size(1024, 673);
             panelDesktop.TabIndex = 3;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1226, 581);
+            ClientSize = new Size(1096, 669);
             Controls.Add(panelDesktop);
-            Controls.Add(panelTitle);
             Controls.Add(panelMenu);
             Name = "MainForm";
             Text = "Objects Recognition";
             panelMenu.ResumeLayout(false);
-            panelTitle.ResumeLayout(false);
-            panelTitle.PerformLayout();
             ResumeLayout(false);
         }
 
         #endregion
 
         private Panel panelMenu;
-        private Panel panelTitle;
-        private Button btnLeftMenu;
-        private Label lblTitle;
-        private Button btnFiles;
         private Button btnSettings;
         private Button btnCamera;
-        private Button btnPlayVideo;
+        private Button btnVideo;
         private Panel panelDesktop;
+        private Button btnFiles;
     }
 }

@@ -1,65 +1,78 @@
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+using ObjectsRecognition.Pages;
 
 namespace ObjectsRecognition
 {
     public partial class MainForm : Form
     {
-        bool showHideLeftMenu = true;
-        //private Form? activePage;
+        private Form? activePage;
 
         public MainForm()
         {
             InitializeComponent();
+            SetActivePage(btnCamera.Name);
         }
-
-        private void btnLeftMenu_Click(object sender, EventArgs e)
-        {
-            panelMenu.Width = showHideLeftMenu ? 250 : 70;
-            if (showHideLeftMenu)
-            {
-                btnFiles.Text = "   Files";
-                btnPlayVideo.Text = "   Play Video";
-                btnCamera.Text = "   Camera";
-                btnSettings.Text = "   Settings";
-            }
-            else
-            {
-                btnFiles.Text = btnPlayVideo.Text = btnCamera.Text
-                    = btnSettings.Text = string.Empty;
-            }
-
-            btnLeftMenu.Width = btnFiles.Width = btnPlayVideo.Width
-                = btnCamera.Width = btnSettings.Width = panelMenu.Width;
-            showHideLeftMenu = !showHideLeftMenu;
-        }
-
-        #region LeftMenu
 
         private void btnFiles_Click(object sender, EventArgs e) =>
-            OpenChildForm(new Pages.FilesPage(), sender);
+            SetActivePage(btnFiles.Name);
 
         private void btnPlayVideo_Click(object sender, EventArgs e) =>
-            OpenChildForm(new Pages.VideoPage(), sender);
+            SetActivePage(btnVideo.Name);
 
         private void btnCamera_Click(object sender, EventArgs e) =>
-            OpenChildForm(new Pages.CameraPage(), sender);
+            SetActivePage(btnCamera.Name);
 
         private void btnSettings_Click(object sender, EventArgs e) =>
-            OpenChildForm(new Pages.SettingsPage(), sender);
+            SetActivePage(btnSettings.Name);
 
-        #endregion
-
-        private void OpenChildForm(Form childForm, object btnSender)
+        private void SetActivePage(string buttonName)
         {
-            activePage = childForm;
-            childForm.TopLevel = false;
-            childForm.FormBorderStyle = FormBorderStyle.None;
-            childForm.Dock = DockStyle.Fill;
-            panelDesktop.Controls.Add(childForm);
-            panelDesktop.Tag = childForm;
-            childForm.BringToFront();
-            childForm.Show();
-            lblTitle.Text = childForm.Text;
+            Form? formToOpen = null;
+
+            switch (buttonName)
+            {
+                case "btnFiles":
+                    btnFiles.BackColor = Color.Orchid;
+                    btnFiles.ForeColor = Color.WhiteSmoke;
+                    btnVideo.BackColor = btnCamera.BackColor = btnSettings.BackColor = Color.Purple;
+                    btnVideo.ForeColor = btnCamera.ForeColor = btnSettings.ForeColor = Color.Gainsboro;
+                    formToOpen = new FilesPage();
+                    break;
+                case "btnVideo":
+                    btnVideo.BackColor = Color.Orchid;
+                    btnVideo.ForeColor = Color.WhiteSmoke;
+                    btnFiles.BackColor = btnCamera.BackColor = btnSettings.BackColor = Color.Purple;
+                    btnFiles.ForeColor = btnCamera.ForeColor = btnSettings.ForeColor = Color.Gainsboro;
+                    formToOpen = new VideoPage();
+                    break;
+                case "btnCamera":
+                    btnCamera.BackColor = Color.Orchid;
+                    btnCamera.ForeColor = Color.WhiteSmoke;
+                    btnVideo.BackColor = btnFiles.BackColor = btnSettings.BackColor = Color.Purple;
+                    btnVideo.ForeColor = btnFiles.ForeColor = btnSettings.ForeColor = Color.Gainsboro;
+                    formToOpen = new CameraPage();
+                    break;
+                default:
+                    btnSettings.BackColor = Color.Orchid;
+                    btnSettings.ForeColor = Color.WhiteSmoke;
+                    btnVideo.BackColor = btnCamera.BackColor = btnFiles.BackColor = Color.Purple;
+                    btnVideo.ForeColor = btnCamera.ForeColor = btnFiles.ForeColor = Color.Gainsboro;
+                    formToOpen = new SettingsPage();
+                    break;
+            }
+
+            if (activePage != null)
+            {
+                activePage.Close();
+                activePage.Dispose();
+            }
+
+            activePage = formToOpen;
+            formToOpen.TopLevel = false;
+            formToOpen.FormBorderStyle = FormBorderStyle.None;
+            formToOpen.Dock = DockStyle.Fill;
+            panelDesktop.Controls.Add(formToOpen);
+            formToOpen.BringToFront();
+            formToOpen.Show();
         }
     }
 }
