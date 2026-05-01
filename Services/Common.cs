@@ -6,10 +6,6 @@ namespace ObjectsRecognition.Services
     {
         Color color;
 
-        Queue<Coords> coords = new Queue<Coords>();
-
-        Coords target;
-
         public CommonService()
         {
             switch (Properties.Settings.Default["Color"].ToString())
@@ -42,88 +38,6 @@ namespace ObjectsRecognition.Services
 
             return fullPath;
         }
-
-        /// <summary>
-        /// Use only for Aircraft model
-        /// </summary>
-        /// <param name="image"></param>
-        /// <param name="yoloPredictions"></param>
-        /// <returns></returns>
-        //public Image DrawBoundingBoxWithSniperCircle(Image image, List<YoloPrediction> yoloPredictions)
-        //{
-        //    var imageHeight = image.Height;
-        //    var imageWidth = image.Width;
-
-        //    foreach (var prediction in yoloPredictions)
-        //    {
-        //        int x = (int)prediction.Rectangle.X;
-        //        int y = (int)prediction.Rectangle.Y;
-
-        //        using (Graphics thumbnailGraphic = Graphics.FromImage(image))
-        //        {
-        //            var score = Math.Round(prediction.Score * 100, 1);
-        //            string text = $"{prediction.Label.Category} {prediction.Label.Name} - {score}%";
-
-        //            Font drawFont = new Font("Segoe UI", 12, FontStyle.Regular);
-        //            SizeF size = thumbnailGraphic.MeasureString(text, drawFont);
-        //            SolidBrush fontBrush = new(color);
-        //            Point atPoint = new(x - 3, y - 30);
-
-        //            Pen pen = new(color, 2f);
-
-        //            //thumbnailGraphic.DrawRectangle(pen, x, y, prediction.Rectangle.Width, prediction.Rectangle.Height);
-        //            thumbnailGraphic.DrawString(text, drawFont, fontBrush, atPoint);
-
-        //            // Draw sniper scope on screen center
-        //            thumbnailGraphic.DrawLine(new(Color.Red, 1f), new PointF(imageWidth / 2, imageHeight / 2 + 300 - 60),
-        //                new PointF(imageWidth / 2, imageHeight / 2 + 300 + 60));
-        //            thumbnailGraphic.DrawLine(new(Color.Red, 1f), new PointF(imageWidth / 2 - 60, imageHeight / 2 + 300),
-        //                new PointF(imageWidth / 2 + 60, imageHeight / 2 + 300));
-
-        //            thumbnailGraphic.DrawEllipse(new(Color.Red, 1f), imageWidth / 2 - 25, imageHeight / 2 + 300 - 25, 50, 50);
-        //            thumbnailGraphic.DrawEllipse(new(Color.Red, 1f), imageWidth / 2 - 50, imageHeight / 2 + 300 - 50, 100, 100);
-
-        //            // Draw sniper scope
-        //            // Add center of prediction.Rectangle on the image
-        //            var current = new Coords(x + prediction.Rectangle.Width / 2, y + prediction.Rectangle.Height / 2);
-        //            if (coords.Count == 0)
-        //            {
-        //                coords.Enqueue(current);
-        //            }
-        //            else if (coords.Count == 1)
-        //            {
-        //                var previous = coords.Peek();
-        //                if (previous.X != current.X)
-        //                {
-        //                    coords.Enqueue(current);
-        //                    TargetForecast(previous, current);
-        //                }
-        //            }
-        //            else if (coords.Count == 2)
-        //            {
-        //                var previous = coords.Dequeue();
-        //                if (previous.X != current.X)
-        //                {
-        //                    coords.Enqueue(current);
-        //                    TargetForecast(previous, current);
-        //                }
-        //            }
-
-        //            if (target != null)
-        //            {
-        //                thumbnailGraphic.DrawLine(new(Color.Orange, 2f), new PointF(target.X, target.Y - 55),
-        //                    new PointF(target.X, target.Y + 55));
-        //                thumbnailGraphic.DrawLine(new(Color.Orange, 2f), new PointF(target.X - 55, target.Y),
-        //                    new PointF(target.X + 55, target.Y));
-
-        //                thumbnailGraphic.DrawLine(new(Color.Red, 1f), new PointF(imageWidth / 2, imageHeight / 2 + 300),
-        //                    new PointF(target.X, target.Y));
-        //            }
-        //        }
-        //    }
-
-        //    return image;
-        //}
 
         //public Image DrawBoundingBox(Image image, List<YoloPrediction> yoloPredictions)
         //{
@@ -182,26 +96,42 @@ namespace ObjectsRecognition.Services
             return image;
         }
 
+        public Image DrawBoundingBox(Image image, List<PredictionData> predictions)
+        {
+            foreach (var prediction in predictions)
+            {
+                int x = (int)prediction.RectangleX;
+                int y = (int)prediction.RectangleY;
+
+                using (Graphics thumbnailGraphic = Graphics.FromImage(image))
+                {
+                    var score = Math.Round(prediction.Score * 100, 1);
+                    string text = $"{prediction.Category} {prediction.Name} - {score}%";
+
+                    Font drawFont = new Font("Segoe UI", 12, FontStyle.Regular);
+                    SizeF size = thumbnailGraphic.MeasureString(text, drawFont);
+                    SolidBrush fontBrush = new(color);
+                    Pen pen = new(color, 2f);
+                    Point atPoint = new(x - 3, y - 30);
+
+                    thumbnailGraphic.DrawRectangle(pen, x, y, prediction.Width, prediction.Height);
+                    thumbnailGraphic.DrawString(text, drawFont, fontBrush, atPoint);
+                }
+            }
+
+            return image;
+        }
+
         public Bitmap OverlayImages(Bitmap background, Bitmap overlay, Point location)
         {
-            // Clone background to avoid modifying the original
-            Bitmap result = new Bitmap(background.Width, background.Height);
+            Bitmap result = new(background.Width, background.Height);// Clone background to avoid modifying the original
 
             using (Graphics g = Graphics.FromImage(result))
             {
-                // Draw the base image
-                //g.DrawImage(background, 0, 0);
-
-                // Draw the overlay at specific coordinates
-                // Ensure overlay has transparency (e.g., PNG) to see the background beneath it
                 g.DrawImage(overlay, location);
             }
 
             return result;
         }
-
-
-        private void TargetForecast(Coords previous, Coords current) =>
-             target = new Coords(current.X + (current.X - previous.X), current.Y + (current.Y - previous.Y));
     }
 }

@@ -28,89 +28,96 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CameraPage));
-            pbVideo = new PictureBox();
-            cmbCameras = new ComboBox();
-            btnRecord = new Button();
-            btnScreenShot = new Button();
-            lblTimeCounter = new Label();
+            PbVideo = new PictureBox();
+            CmbCameras = new ComboBox();
+            BtnRecord = new Button();
+            BtnScreenShot = new Button();
+            LblTimeCounter = new Label();
             CmbMode = new ComboBox();
             CmbLoop = new ComboBox();
             LblLoop = new Label();
-            ((System.ComponentModel.ISupportInitialize)pbVideo).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)PbVideo).BeginInit();
             SuspendLayout();
             // 
-            // pbVideo
+            // PbVideo
             // 
-            pbVideo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            pbVideo.Location = new Point(1, 54);
-            pbVideo.Name = "pbVideo";
-            pbVideo.Size = new Size(1024, 576);
-            pbVideo.SizeMode = PictureBoxSizeMode.StretchImage;
-            pbVideo.TabIndex = 0;
-            pbVideo.TabStop = false;
+            PbVideo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            PbVideo.BackColor = SystemColors.Control;
+            PbVideo.Location = new Point(0, 43);
+            PbVideo.Margin = new Padding(0);
+            PbVideo.Name = "PbVideo";
+            PbVideo.Size = new Size(896, 504);
+            PbVideo.SizeMode = PictureBoxSizeMode.StretchImage;
+            PbVideo.TabIndex = 0;
+            PbVideo.TabStop = false;
             // 
-            // cmbCameras
+            // CmbCameras
             // 
-            cmbCameras.FormattingEnabled = true;
-            cmbCameras.Location = new Point(12, 12);
-            cmbCameras.Name = "cmbCameras";
-            cmbCameras.Size = new Size(280, 28);
-            cmbCameras.TabIndex = 1;
-            cmbCameras.SelectedIndexChanged += cmbCameras_SelectedIndexChanged;
+            CmbCameras.FormattingEnabled = true;
+            CmbCameras.Location = new Point(10, 9);
+            CmbCameras.Margin = new Padding(3, 2, 3, 2);
+            CmbCameras.Name = "CmbCameras";
+            CmbCameras.Size = new Size(246, 23);
+            CmbCameras.TabIndex = 1;
+            CmbCameras.SelectedIndexChanged += CmbCameras_SelectedIndexChanged;
             // 
-            // btnRecord
+            // BtnRecord
             // 
-            btnRecord.FlatAppearance.BorderSize = 0;
-            btnRecord.FlatStyle = FlatStyle.Flat;
-            btnRecord.Image = Properties.Resources.movie_24;
-            btnRecord.Location = new Point(555, 9);
-            btnRecord.Name = "btnRecord";
-            btnRecord.Size = new Size(40, 33);
-            btnRecord.TabIndex = 2;
-            btnRecord.UseVisualStyleBackColor = true;
-            btnRecord.Click += btnRecord_Click;
+            BtnRecord.FlatAppearance.BorderSize = 0;
+            BtnRecord.FlatStyle = FlatStyle.Flat;
+            BtnRecord.Image = Properties.Resources.movie_24;
+            BtnRecord.Location = new Point(484, 7);
+            BtnRecord.Margin = new Padding(3, 2, 3, 2);
+            BtnRecord.Name = "BtnRecord";
+            BtnRecord.Size = new Size(35, 25);
+            BtnRecord.TabIndex = 2;
+            BtnRecord.UseVisualStyleBackColor = true;
+            BtnRecord.Click += BtnRecord_Click;
             // 
-            // btnScreenShot
+            // BtnScreenShot
             // 
-            btnScreenShot.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnScreenShot.FlatAppearance.BorderSize = 0;
-            btnScreenShot.FlatStyle = FlatStyle.Flat;
-            btnScreenShot.Image = (Image)resources.GetObject("btnScreenShot.Image");
-            btnScreenShot.Location = new Point(984, 9);
-            btnScreenShot.Name = "btnScreenShot";
-            btnScreenShot.Size = new Size(40, 33);
-            btnScreenShot.TabIndex = 5;
-            btnScreenShot.UseVisualStyleBackColor = true;
-            btnScreenShot.Click += btnScreenShot_Click;
+            BtnScreenShot.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            BtnScreenShot.FlatAppearance.BorderSize = 0;
+            BtnScreenShot.FlatStyle = FlatStyle.Flat;
+            BtnScreenShot.Image = Properties.Resources.screenshot;
+            BtnScreenShot.Location = new Point(858, 7);
+            BtnScreenShot.Margin = new Padding(3, 2, 3, 2);
+            BtnScreenShot.Name = "BtnScreenShot";
+            BtnScreenShot.Size = new Size(35, 25);
+            BtnScreenShot.TabIndex = 5;
+            BtnScreenShot.UseVisualStyleBackColor = true;
+            BtnScreenShot.Click += BtnScreenShot_Click;
             // 
-            // lblTimeCounter
+            // LblTimeCounter
             // 
-            lblTimeCounter.AutoSize = true;
-            lblTimeCounter.FlatStyle = FlatStyle.Flat;
-            lblTimeCounter.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            lblTimeCounter.ForeColor = Color.WhiteSmoke;
-            lblTimeCounter.Location = new Point(615, 15);
-            lblTimeCounter.Name = "lblTimeCounter";
-            lblTimeCounter.Size = new Size(49, 20);
-            lblTimeCounter.TabIndex = 6;
-            lblTimeCounter.Text = "00:00";
+            LblTimeCounter.AutoSize = true;
+            LblTimeCounter.FlatStyle = FlatStyle.Flat;
+            LblTimeCounter.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            LblTimeCounter.ForeColor = Color.WhiteSmoke;
+            LblTimeCounter.Location = new Point(529, 11);
+            LblTimeCounter.Margin = new Padding(3, 2, 3, 0);
+            LblTimeCounter.Name = "LblTimeCounter";
+            LblTimeCounter.Size = new Size(38, 15);
+            LblTimeCounter.TabIndex = 6;
+            LblTimeCounter.Text = "00:00";
             // 
             // CmbMode
             // 
             CmbMode.FormattingEnabled = true;
-            CmbMode.Location = new Point(305, 12);
+            CmbMode.Location = new Point(266, 9);
+            CmbMode.Margin = new Padding(3, 2, 3, 2);
             CmbMode.Name = "CmbMode";
-            CmbMode.Size = new Size(91, 28);
+            CmbMode.Size = new Size(80, 23);
             CmbMode.TabIndex = 7;
             CmbMode.SelectedIndexChanged += CmbMode_SelectedIndexChanged;
             // 
             // CmbLoop
             // 
             CmbLoop.FormattingEnabled = true;
-            CmbLoop.Location = new Point(487, 12);
+            CmbLoop.Location = new Point(427, 9);
+            CmbLoop.Margin = new Padding(3, 2, 3, 2);
             CmbLoop.Name = "CmbLoop";
-            CmbLoop.Size = new Size(53, 28);
+            CmbLoop.Size = new Size(47, 23);
             CmbLoop.TabIndex = 8;
             CmbLoop.SelectedIndexChanged += CmbLoop_SelectedIndexChanged;
             // 
@@ -120,42 +127,44 @@
             LblLoop.FlatStyle = FlatStyle.Flat;
             LblLoop.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             LblLoop.ForeColor = Color.WhiteSmoke;
-            LblLoop.Location = new Point(402, 15);
+            LblLoop.Location = new Point(356, 11);
             LblLoop.Name = "LblLoop";
-            LblLoop.Size = new Size(79, 20);
+            LblLoop.Size = new Size(61, 15);
             LblLoop.TabIndex = 9;
             LblLoop.Text = "Loop, min";
+            LblLoop.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // CameraPage
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Purple;
-            ClientSize = new Size(1026, 626);
+            ClientSize = new Size(895, 545);
             Controls.Add(LblLoop);
             Controls.Add(CmbLoop);
             Controls.Add(CmbMode);
-            Controls.Add(lblTimeCounter);
-            Controls.Add(btnScreenShot);
-            Controls.Add(btnRecord);
-            Controls.Add(cmbCameras);
-            Controls.Add(pbVideo);
+            Controls.Add(LblTimeCounter);
+            Controls.Add(BtnScreenShot);
+            Controls.Add(BtnRecord);
+            Controls.Add(CmbCameras);
+            Controls.Add(PbVideo);
+            Margin = new Padding(3, 2, 3, 2);
             Name = "CameraPage";
             Text = "Camera";
             FormClosing += CameraPage_FormClosing;
             Load += CameraPage_Load;
-            ((System.ComponentModel.ISupportInitialize)pbVideo).EndInit();
+            ((System.ComponentModel.ISupportInitialize)PbVideo).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
 
-        private PictureBox pbVideo;
-        private ComboBox cmbCameras;
-        private Button btnRecord;
-        private Button btnScreenShot;
-        private Label lblTimeCounter;
+        private PictureBox PbVideo;
+        private ComboBox CmbCameras;
+        private Button BtnRecord;
+        private Button BtnScreenShot;
+        private Label LblTimeCounter;
         private ComboBox CmbMode;
         private ComboBox CmbLoop;
         private Label LblLoop;

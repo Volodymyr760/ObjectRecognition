@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="btnSettings.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="BtnSettings.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAnxJREFUWEft
         l8tqFEEUQGfwgbr1iY+dbsRXFDQScO0shIjLZKkEkoVk51Ixmj8wUQkSBCVLQYIQF8k+GH/BL9FzhtuD
@@ -134,7 +134,7 @@
         6sfELfkVbPTHxCXU3y9/w1K/Zt59cpndJ02r9Qe3+KbyBqLg+gAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="btnCamera.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="BtnCamera.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAbxJREFUWEft
         ljsvBFEUgMcrwWg8GyKodJRbEK0tNbKsikZBUKg0IgqVxqMTsSEkthS9xP4CvUTif/CdO2c3Zsfs3NmZ
@@ -147,7 +147,7 @@
         3mLSQ6lsWLEOpRkZLcBxvgG7JgjWgkvloQAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="btnVideo.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="BtnVideo.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAbtJREFUWEft
         l0svA1EYhou6pBK3tE0krLFhIxFbawvCAj+gKxLhP4gtwkJsEJduurUg/pNfwPP2fDM5pdNpOzONhCd5

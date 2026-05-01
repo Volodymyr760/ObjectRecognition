@@ -44,7 +44,13 @@
             cbAvtoScreenshotsEnabled = new CheckBox();
             lblAvoScreenshotsEnabled = new Label();
             btnReset = new Button();
+            LblLoop = new Label();
+            UdLoopRecording = new NumericUpDown();
+            LblMaxStorage = new Label();
+            UDMaxStorage = new NumericUpDown();
             gbAvtomation.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)UdLoopRecording).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)UDMaxStorage).BeginInit();
             SuspendLayout();
             // 
             // lblModels
@@ -60,7 +66,7 @@
             // 
             cmbModels.FlatStyle = FlatStyle.Flat;
             cmbModels.FormattingEnabled = true;
-            cmbModels.Location = new Point(577, 20);
+            cmbModels.Location = new Point(366, 25);
             cmbModels.Name = "cmbModels";
             cmbModels.Size = new Size(151, 28);
             cmbModels.TabIndex = 1;
@@ -70,7 +76,7 @@
             // 
             cmbConfidence.FlatStyle = FlatStyle.Flat;
             cmbConfidence.FormattingEnabled = true;
-            cmbConfidence.Location = new Point(577, 66);
+            cmbConfidence.Location = new Point(366, 71);
             cmbConfidence.Name = "cmbConfidence";
             cmbConfidence.Size = new Size(151, 28);
             cmbConfidence.TabIndex = 3;
@@ -89,7 +95,7 @@
             // 
             cmbFrameDelays.FlatStyle = FlatStyle.Flat;
             cmbFrameDelays.FormattingEnabled = true;
-            cmbFrameDelays.Location = new Point(577, 112);
+            cmbFrameDelays.Location = new Point(366, 117);
             cmbFrameDelays.Name = "cmbFrameDelays";
             cmbFrameDelays.Size = new Size(151, 28);
             cmbFrameDelays.TabIndex = 5;
@@ -108,7 +114,7 @@
             // 
             cmbColors.FlatStyle = FlatStyle.Flat;
             cmbColors.FormattingEnabled = true;
-            cmbColors.Location = new Point(577, 158);
+            cmbColors.Location = new Point(366, 163);
             cmbColors.Name = "cmbColors";
             cmbColors.Size = new Size(151, 28);
             cmbColors.TabIndex = 7;
@@ -127,7 +133,7 @@
             // 
             cmbFrequency.FlatStyle = FlatStyle.Flat;
             cmbFrequency.FormattingEnabled = true;
-            cmbFrequency.Location = new Point(577, 204);
+            cmbFrequency.Location = new Point(366, 209);
             cmbFrequency.Name = "cmbFrequency";
             cmbFrequency.Size = new Size(151, 28);
             cmbFrequency.TabIndex = 9;
@@ -150,7 +156,7 @@
             gbAvtomation.Controls.Add(lblAvoScreenshotsEnabled);
             gbAvtomation.Location = new Point(40, 252);
             gbAvtomation.Name = "gbAvtomation";
-            gbAvtomation.Size = new Size(697, 143);
+            gbAvtomation.Size = new Size(499, 143);
             gbAvtomation.TabIndex = 10;
             gbAvtomation.TabStop = false;
             gbAvtomation.Text = "Avto Screenshots Setup";
@@ -159,7 +165,7 @@
             // 
             cmbFilesLimit.FlatStyle = FlatStyle.Flat;
             cmbFilesLimit.FormattingEnabled = true;
-            cmbFilesLimit.Location = new Point(535, 86);
+            cmbFilesLimit.Location = new Point(326, 91);
             cmbFilesLimit.Name = "cmbFilesLimit";
             cmbFilesLimit.Size = new Size(151, 28);
             cmbFilesLimit.TabIndex = 3;
@@ -178,7 +184,7 @@
             // 
             cbAvtoScreenshotsEnabled.AutoSize = true;
             cbAvtoScreenshotsEnabled.FlatStyle = FlatStyle.Flat;
-            cbAvtoScreenshotsEnabled.Location = new Point(536, 40);
+            cbAvtoScreenshotsEnabled.Location = new Point(441, 36);
             cbAvtoScreenshotsEnabled.Name = "cbAvtoScreenshotsEnabled";
             cbAvtoScreenshotsEnabled.Size = new Size(14, 13);
             cbAvtoScreenshotsEnabled.TabIndex = 1;
@@ -197,18 +203,62 @@
             // btnReset
             // 
             btnReset.FlatStyle = FlatStyle.Flat;
-            btnReset.Location = new Point(577, 421);
+            btnReset.Location = new Point(844, 489);
             btnReset.Name = "btnReset";
             btnReset.Size = new Size(151, 29);
             btnReset.TabIndex = 11;
             btnReset.Text = "Reset";
             btnReset.UseVisualStyleBackColor = true;
             // 
+            // LblLoop
+            // 
+            LblLoop.AutoSize = true;
+            LblLoop.Location = new Point(567, 28);
+            LblLoop.Name = "LblLoop";
+            LblLoop.Size = new Size(147, 20);
+            LblLoop.TabIndex = 12;
+            LblLoop.Text = "Loop Recording, min";
+            // 
+            // UdLoopRecording
+            // 
+            UdLoopRecording.Location = new Point(913, 26);
+            UdLoopRecording.Maximum = new decimal(new int[] { 5, 0, 0, 0 });
+            UdLoopRecording.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            UdLoopRecording.Name = "UdLoopRecording";
+            UdLoopRecording.Size = new Size(57, 27);
+            UdLoopRecording.TabIndex = 13;
+            UdLoopRecording.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            UdLoopRecording.ValueChanged += UdLoopRecording_ValueChanged;
+            // 
+            // LblMaxStorage
+            // 
+            LblMaxStorage.AutoSize = true;
+            LblMaxStorage.Location = new Point(567, 74);
+            LblMaxStorage.Name = "LblMaxStorage";
+            LblMaxStorage.Size = new Size(119, 20);
+            LblMaxStorage.TabIndex = 14;
+            LblMaxStorage.Text = "Max Storage, Gb";
+            // 
+            // UDMaxStorage
+            // 
+            UDMaxStorage.Location = new Point(913, 67);
+            UDMaxStorage.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
+            UDMaxStorage.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            UDMaxStorage.Name = "UDMaxStorage";
+            UDMaxStorage.Size = new Size(57, 27);
+            UDMaxStorage.TabIndex = 15;
+            UDMaxStorage.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            UDMaxStorage.ValueChanged += UDMaxStorage_ValueChanged;
+            // 
             // SettingsPage
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1001, 462);
+            ClientSize = new Size(1026, 626);
+            Controls.Add(UDMaxStorage);
+            Controls.Add(LblMaxStorage);
+            Controls.Add(UdLoopRecording);
+            Controls.Add(LblLoop);
             Controls.Add(btnReset);
             Controls.Add(gbAvtomation);
             Controls.Add(cmbFrequency);
@@ -226,6 +276,8 @@
             Load += SettingsPage_Load;
             gbAvtomation.ResumeLayout(false);
             gbAvtomation.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)UdLoopRecording).EndInit();
+            ((System.ComponentModel.ISupportInitialize)UDMaxStorage).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -248,5 +300,9 @@
         private CheckBox cbAvtoScreenshotsEnabled;
         private Label lblAvoScreenshotsEnabled;
         private Button btnReset;
+        private Label LblLoop;
+        private NumericUpDown UdLoopRecording;
+        private Label LblMaxStorage;
+        private NumericUpDown UDMaxStorage;
     }
 }

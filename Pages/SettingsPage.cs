@@ -58,6 +58,12 @@ namespace ObjectsRecognition.Pages
                 string[] limits = ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000"];
                 foreach (string limit in limits) cmbFilesLimit.Items.Add(limit);
                 cmbFilesLimit.SelectedItem = Properties.Settings.Default["FilesLimit"].ToString();
+
+                // Loop Recording (1 - 5  min file duration)
+                UdLoopRecording.Value = (int)Properties.Settings.Default["Loop"];
+
+                // Max Storage (1 - 20Gb disk space)
+                UDMaxStorage.Value = (int)Properties.Settings.Default["MaxStorage"];
             }
             catch (Exception ex)
             {
@@ -156,5 +162,30 @@ namespace ObjectsRecognition.Pages
             }
         }
 
+        private void UdLoopRecording_ValueChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                Properties.Settings.Default["Loop"] = (int)UdLoopRecording.Value;
+                Properties.Settings.Default.Save();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void UDMaxStorage_ValueChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                Properties.Settings.Default["MaxStorage"] = (int)UDMaxStorage.Value;
+                Properties.Settings.Default.Save();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
     }
 }

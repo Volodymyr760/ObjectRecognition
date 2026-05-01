@@ -103,9 +103,9 @@ namespace ObjectsRecognition.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap play_circle_outline {
+        internal static System.Drawing.Bitmap play {
             get {
-                object obj = ResourceManager.GetObject("play_circle_outline", resourceCulture);
+                object obj = ResourceManager.GetObject("play", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

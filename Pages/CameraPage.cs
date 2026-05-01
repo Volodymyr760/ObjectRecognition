@@ -12,26 +12,40 @@ namespace ObjectsRecognition.Pages
 {
     public partial class CameraPage : Form
     {
+        #region Private Members
+
         VideoCapture? capture;
-        VideoWriter writer;
+        VideoWriter? writer;
+
+        Bitmap? currentSnapshot;
+        Bitmap? previousSnapshot;
+        double sensitivity = 0.02d;
+        double bitmapsDifference = 0;
+
         DsDevice[] cams;
         CommonService commonService;
-        int delay;
-        int frequency;
+        //int delay;
+        //int frequency;
         ImageToRecognize imageToRecognize = new ImageToRecognize();
-        bool isRecording;
-        bool isAIModeFlag;
-        bool isRegularModeFlag;
+        bool shouldRecord;
+        bool isActuallyRecording;
         int loopRecording;
+        int maxStorage;
         Mat mat;
-        string outputFolder = string.Empty;
+        string outputVideoFolder = string.Empty;
         YoloScorer<YoloSignModel> scorer;
         int selectedCameraId = 0;
         System.Timers.Timer DurationTimer = new System.Timers.Timer();
         System.Timers.Timer RecognitionTimer = new System.Timers.Timer();
+        System.Timers.Timer CheckMoveTimer = new System.Timers.Timer();
+
         int durationSeconds = 0;
 
         List<YoloPrediction> yoloPredictions = [];
+
+        #endregion
+
+        #region Ctor
 
         public CameraPage()
         {
@@ -39,25 +53,219 @@ namespace ObjectsRecognition.Pages
 
             cams = DsDevice.GetDevicesOfCat(FilterCategory.VideoInputDevice);
             commonService = new CommonService();
-            frequency = Properties.Settings.Default["Frequency"].ToString() switch
-            {
-                "Once/sec" => 1000,
-                "Twice/sec" => 500,
-                _ => 0,
-            };
 
-            isRecording = false;
-            isAIModeFlag = false;
+            shouldRecord = false;
 
             mat = new Mat();
 
             loopRecording = (int)Properties.Settings.Default["Loop"]; // in minutes
+            maxStorage = (int)Properties.Settings.Default["MaxStorage"]; // Gb
 
-            outputFolder = Path.Combine(commonService.GetAbsolutePath("Assets"), "Output");
-            if (!Directory.Exists(outputFolder)) Directory.CreateDirectory(outputFolder);
+            outputVideoFolder = Path.Combine(commonService.GetAbsolutePath("Assets"), "Video");
+            if (!Directory.Exists(outputVideoFolder)) Directory.CreateDirectory(outputVideoFolder);
 
             scorer = new YoloScorer<YoloSignModel>("Assets/Models/" +
                             Properties.Settings.Default["CurrentModel"].ToString());
+        }
+
+        #endregion
+
+        #region UI Events
+
+        void CameraPage_Load(object sender, EventArgs e)
+        {
+            // Init UI controls
+            ToolTip CameraPageTooltip = new ToolTip();
+            CameraPageTooltip.SetToolTip(BtnRecord, "Start/Stop Record");
+            CameraPageTooltip.SetToolTip(BtnScreenShot, "Save ScreenShot");
+
+            object[] modes = [Mode.Regular, Mode.OnMove, Mode.AIMode];
+            CmbMode.Items.AddRange(modes);
+            CmbMode.SelectedIndex = (int)Properties.Settings.Default["Mode"];
+            CameraPageTooltip.SetToolTip(CmbMode, "Record Mode");
+
+            object[] loops = [1, 2, 3, 4, 5];
+            CmbLoop.Items.AddRange(loops);
+            CmbLoop.SelectedIndex = (int)Properties.Settings.Default["Loop"] - 1; // 1-5 minutes, 0 - unacceptable
+            CameraPageTooltip.SetToolTip(CmbLoop, "Loop Recording");
+
+            if (cams.Length > 0)
+            {
+                foreach (var cam in cams) CmbCameras.Items.Add(cam.Name);
+                CmbCameras.SelectedIndex = selectedCameraId;
+                StartCamera();
+            }
+        }
+
+        void CameraPage_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            shouldRecord = false;
+            capture?.Stop();
+            capture?.Dispose();
+            mat?.Dispose();
+            DurationTimer.Stop();
+            DurationTimer.Dispose();
+            RecognitionTimer.Stop();
+            RecognitionTimer.Dispose();
+
+            shouldRecord = false;
+            previousSnapshot = null;
+            CheckMoveTimer.Stop();
+            CheckMoveTimer.Dispose();
+            writer?.Dispose();
+        }
+
+        void CameraCapture_ImageGrabbed(object? sender, EventArgs e)
+        {
+            try
+            {
+                capture?.Retrieve(mat);
+                Bitmap? image = mat.ToImage<Bgr, byte>().Flip(FlipType.Horizontal).ToBitmap();
+
+                if ((int)Properties.Settings.Default["Mode"] == (int)Mode.AIMode)
+                {
+                    if (imageToRecognize.InProgress)
+                    {
+                        imageToRecognize.Image = commonService.OverlayImages(new Bitmap(640, 640), image, new Point(0, 0));// new Bitmap(image);
+                        imageToRecognize.InProgress = false;
+                        Task.Run(() => GetPredictions(imageToRecognize.Image));
+                    }
+                    if (yoloPredictions.Count > 0)
+                        image = (Bitmap)commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 1, 1);
+                }
+
+                if (shouldRecord && !isActuallyRecording)
+                {
+                    if ((int)Properties.Settings.Default["Mode"] == (int)Mode.OnMove)
+                    {
+                        if (bitmapsDifference < sensitivity) return;
+                    }
+
+                    isActuallyRecording = true; // stop starting recording task
+                    RecordVideo();
+
+                    CheckStorageUsage();
+                }
+
+                //if (yoloPredictions.Count > 0)
+                //{
+                //    var imageToSave = commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 0, 0);
+                //    string screenshotFilename = $"Screen_{DateTime.Now.Day}_{DateTime.Now.Month}_{DateTime.Now.Year}" +
+                //        $"_{DateTime.Now.Hour}_{DateTime.Now.Minute}_{DateTime.Now.Second}.jpg";
+                //    Task.Run(() => imageToSave.Save(Path.Combine(outputFolder, Path.GetFileName(screenshotFilename))))
+                //        .ContinueWith(t =>
+                //            {
+                //                pbVideo.Image = imageToSave;
+                //                Task.Delay(frequency);
+                //            });
+                //    pbVideo.Image = commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 0, 0);
+                //}
+                //else
+                //{
+                //    pbVideo.Image = image;
+                //}
+
+                PbVideo.Image = image;
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("ImageGrabbed: " + ex.Message);
+            }
+        }
+
+        void BtnRecord_Click(object sender, EventArgs e)
+        {
+            if (capture == null) return;
+            try
+            {
+                shouldRecord = !shouldRecord;
+                BtnRecord.Image = shouldRecord ? Properties.Resources.movie_off_24 : Properties.Resources.movie_24;
+                if (shouldRecord) // user wants start recording
+                {
+                    if (CmbMode.SelectedIndex == (int)Mode.OnMove) OnCheckMoveTimerStart(true);
+                }
+                else // user wants to stop recordiing
+                {
+                    if (CmbMode.SelectedIndex == (int)Mode.OnMove) OnCheckMoveTimerStart(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        void BtnScreenShot_Click(object sender, EventArgs e)
+        {
+            if (PbVideo.Image == null) return;
+            try
+            {
+                string outputFolder = Path.Combine(commonService.GetAbsolutePath("Assets"), "Output");
+                if (!Directory.Exists(outputFolder)) Directory.CreateDirectory(outputFolder);
+
+                string screenshotFilename = $"Screen_{DateTime.Now.Day}__{DateTime.Now.Month}_{DateTime.Now.Year}" +
+                    $"_{DateTime.Now.Hour}_{DateTime.Now.Minute}_{DateTime.Now.Second}.jpg";
+
+                Mat m = new();
+                capture?.Retrieve(m);
+                var image = m.ToImage<Bgr, byte>().Flip(Emgu.CV.CvEnum.FlipType.Horizontal).ToBitmap();
+
+                PbVideo.Image = yoloPredictions.Count > 0 ?
+                    commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 0, 0) : image;
+
+                PbVideo.Image.Save(Path.Combine(outputFolder, Path.GetFileName(screenshotFilename)));
+                MessageBox.Show("Image has been saved to ./Assets/Output folder.");
+            }
+            catch
+            {
+                MessageBox.Show("Oops! Something went wrong.");
+            }
+        }
+
+        void CmbCameras_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            selectedCameraId = CmbCameras.SelectedIndex;
+            // todo: перевірити перезапуск відеопотоку з камери і чи потрібно 
+            // dispose об’єкти як при CameraPage_FormClosing
+        }
+
+        void CmbLoop_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (CmbLoop.SelectedItem == null) return;
+                loopRecording = (int)CmbLoop.SelectedItem;
+                Properties.Settings.Default["Loop"] = loopRecording;
+                Properties.Settings.Default.Save();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        void CmbMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (CmbMode.SelectedItem == null) return;
+                Properties.Settings.Default["Mode"] = (int)CmbMode.SelectedItem;
+                Properties.Settings.Default.Save();
+
+                if (CmbMode.SelectedIndex == (int)Mode.AIMode)
+                {
+                    OnRecognitionTimerStart(true);
+                }
+                else
+                {
+                    OnRecognitionTimerStart(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Mode: " + ex.Message);
+            }
         }
 
         void OnDurationTimerStart(bool startStop)
@@ -68,14 +276,14 @@ namespace ObjectsRecognition.Pages
                 DurationTimer.Elapsed += new ElapsedEventHandler(OnDurationTimerEvent);
                 DurationTimer.Interval = 1000; // ~ 1 second
                 DurationTimer.Enabled = true;
-                lblTimeCounter.BackColor = Color.Red;
+                LblTimeCounter.BackColor = Color.Red;
             }
             else
             {
                 DurationTimer.Stop();
                 DurationTimer.Elapsed -= OnDurationTimerEvent;
-                lblTimeCounter.BackColor = Color.Transparent;
-                lblTimeCounter.Text = "00:00";
+                LblTimeCounter.BackColor = Color.Transparent;
+                LblTimeCounter.Invoke((Action)(() => LblTimeCounter.Text = "00:00"));
             }
         }
 
@@ -83,10 +291,10 @@ namespace ObjectsRecognition.Pages
         {
             try
             {
-                if (isRecording == false) return;
+                if (!shouldRecord) return;
                 durationSeconds++;
-                lblTimeCounter.Invoke((Action)(() =>
-                    lblTimeCounter.Text = ChangeDurationTime(durationSeconds)));
+                TimeSpan ts = TimeSpan.FromSeconds(durationSeconds);
+                LblTimeCounter.Invoke((Action)(() => LblTimeCounter.Text = ts.ToString(@"mm\:ss")));
             }
             catch (Exception ex)
             {
@@ -114,239 +322,81 @@ namespace ObjectsRecognition.Pages
             imageToRecognize.InProgress = true;
         }
 
-        private void CameraPage_Load(object sender, EventArgs e)
+        void OnCheckMoveTimerStart(bool startStop)
         {
-            // Init UI controls
-            ToolTip CameraPageTooltip = new ToolTip();
-            CameraPageTooltip.SetToolTip(btnRecord, "Start/Stop Record");
-            CameraPageTooltip.SetToolTip(btnScreenShot, "Save ScreenShot");
-
-            object[] modes = [Mode.Regular, Mode.OnMove, Mode.AIMode];
-            CmbMode.Items.AddRange(modes);
-            CmbMode.SelectedIndex = (int)Properties.Settings.Default["Mode"];
-            CameraPageTooltip.SetToolTip(CmbMode, "Record Mode");
-
-            object[] loops = [1, 2, 3, 4, 5];
-            CmbLoop.Items.AddRange(loops);
-            CmbLoop.SelectedIndex = (int)Properties.Settings.Default["Loop"] - 1; // 1-5 minutes, 0 - unacceptable
-            CameraPageTooltip.SetToolTip(CmbLoop, "Loop Recording");
-
-            if (cams.Length > 0)
+            if (startStop)
             {
-                foreach (var cam in cams) cmbCameras.Items.Add(cam.Name);
-                cmbCameras.SelectedIndex = 0;
-                StartCamera();
+                CheckMoveTimer.Elapsed += new ElapsedEventHandler(OnCheckMoveEvent);
+                CheckMoveTimer.Interval = 1000;
+                CheckMoveTimer.Enabled = true;
+            }
+            else
+            {
+                CheckMoveTimer.Stop();
+                CheckMoveTimer.Elapsed -= OnCheckMoveEvent;
             }
         }
 
-        private void cmbCameras_SelectedIndexChanged(object sender, EventArgs e)
+        void OnCheckMoveEvent(object? source, ElapsedEventArgs e)
         {
-            selectedCameraId = cmbCameras.SelectedIndex;
+            if (PbVideo.Image == null) return;
+            if (isActuallyRecording) return;
+
+            capture?.Retrieve(mat);
+            if (previousSnapshot == null) // Start movement detection
+            {
+                previousSnapshot = currentSnapshot = new Bitmap(mat.ToImage<Bgr, byte>().Flip(FlipType.Horizontal).ToBitmap(), new Size(16, 16));
+            }
+            else
+            {
+                currentSnapshot = new Bitmap(mat.ToImage<Bgr, byte>().Flip(FlipType.Horizontal).ToBitmap(), new Size(16, 16));
+                previousSnapshot = currentSnapshot;
+            }
+
+            bitmapsDifference = GetBitmapDifference();
+            Debug.WriteLine("Bitmaps Difference: " + bitmapsDifference.ToString());
         }
 
-        private void btnRecord_Click(object sender, EventArgs e)
+        #endregion
+
+        #region Helpers
+
+        void CheckStorageUsage()
         {
-            try
+            long usageLimit = maxStorage * 1000000000L; // to bytes
+
+            string? folderPath = Path.GetDirectoryName(Application.ExecutablePath) + "\\Assets\\Video";
+            if (folderPath == null) return;
+
+            DirectoryInfo directoryInfo = new(folderPath);
+            FileInfo[] files = directoryInfo.GetFiles();
+            files = [.. files.OrderBy(f => f.CreationTime)];
+
+            long filesUsage = 0;
+            foreach (FileInfo file in files) filesUsage += file.Length;
+
+            int counter = 0;
+
+            while (filesUsage > usageLimit)
             {
-                isRecording = !isRecording;
-                btnRecord.Image = isRecording ? Properties.Resources.movie_off_24 : Properties.Resources.movie_24;
-                if (isRecording) // user wants start recording
+                string filePath = Path.Combine(folderPath, files[counter].Name);
+                if (File.Exists(filePath))
                 {
-                    if (CmbMode.SelectedIndex == (int)Mode.Regular)
+                    try
                     {
-                        isRegularModeFlag = true;
-                        OnDurationTimerStart(true);
+                        File.Delete(filePath);
+                        filesUsage -= files[counter].Length;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error of deleting file: {ex.Message}");
+                    }
+                    finally
+                    {
+                        counter++;
                     }
                 }
-                else // user wants to stop recordiing
-                {
-                    if (CmbMode.SelectedIndex == (int)Mode.Regular)
-                    {
-                        isRegularModeFlag = false;
-                        OnDurationTimerStart(false);
-                        //writer?.Dispose();
-                    }
-                }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void VideoCapture_ImageGrabbed(object? sender, EventArgs e)
-        {
-            try
-            {
-                capture?.Retrieve(mat);
-                Bitmap? image = mat.ToImage<Bgr, byte>().Flip(FlipType.Horizontal).ToBitmap();
-
-                if (isAIModeFlag)
-                {
-                    if (imageToRecognize.InProgress)
-                    {
-                        imageToRecognize.Image = commonService.OverlayImages(new Bitmap(640, 640), image, new Point(0, 0));// new Bitmap(image);
-                        imageToRecognize.InProgress = false;
-                        Task.Run(() => GetPredictions(imageToRecognize.Image));
-                    }
-                    if (yoloPredictions.Count > 0)
-                        image = (Bitmap)commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 1, 1);
-                }
-
-                if (isRegularModeFlag && isRecording)
-                {
-                    // stop starting saving task
-                    isRegularModeFlag = false;
-                    //run saving task
-                    RecordRegularVideo();
-
-                    //run check storage limit
-
-                }
-
-                //if (yoloPredictions.Count > 0)
-                //{
-                //    var imageToSave = commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 0, 0);
-                //    string screenshotFilename = $"Screen_{DateTime.Now.Day}_{DateTime.Now.Month}_{DateTime.Now.Year}" +
-                //        $"_{DateTime.Now.Hour}_{DateTime.Now.Minute}_{DateTime.Now.Second}.jpg";
-                //    Task.Run(() => imageToSave.Save(Path.Combine(outputFolder, Path.GetFileName(screenshotFilename))))
-                //        .ContinueWith(t =>
-                //            {
-                //                pbVideo.Image = imageToSave;
-                //                Task.Delay(frequency);
-                //            });
-                //    pbVideo.Image = commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 0, 0);
-                //}
-                //else
-                //{
-                //    pbVideo.Image = image;
-                //}
-
-                pbVideo.Image = image;
-
-                //if (delay > 0 && !imageToRecognize.InProgress) Thread.Sleep(delay);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("ImageGrabbed: " + ex.Message);
-            }
-        }
-
-        private void btnScreenShot_Click(object sender, EventArgs e)
-        {
-            if (pbVideo.Image == null) return;
-            try
-            {
-                string outputFolder = Path.Combine(commonService.GetAbsolutePath("Assets"), "Output");
-                if (!Directory.Exists(outputFolder)) Directory.CreateDirectory(outputFolder);
-
-                string screenshotFilename = $"Screen_{DateTime.Now.Day}__{DateTime.Now.Month}_{DateTime.Now.Year}" +
-                    $"_{DateTime.Now.Hour}_{DateTime.Now.Minute}_{DateTime.Now.Second}.jpg";
-
-                Mat m = new();
-                capture?.Retrieve(m);
-                var image = m.ToImage<Bgr, byte>().Flip(Emgu.CV.CvEnum.FlipType.Horizontal).ToBitmap();
-
-                pbVideo.Image = yoloPredictions.Count > 0 ?
-                    commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 0, 0) : image;
-
-                pbVideo.Image.Save(Path.Combine(outputFolder, Path.GetFileName(screenshotFilename)));
-                MessageBox.Show("Image has been saved to ./Assets/Output folder.");
-            }
-            catch
-            {
-                MessageBox.Show("Oops! Something went wrong.");
-            }
-        }
-
-        private void GetPredictions(Bitmap image) => yoloPredictions = scorer.Predict(image);
-
-        private void StartCamera()
-        {
-            try
-            {
-                if (cams.Length == 0)
-                {
-                    throw new Exception("No available cameras.");
-                }
-                else if (cmbCameras.SelectedItem == null)
-                {
-                    throw new Exception("Choose the camera.");
-                }
-                else
-                {
-                    if (capture == null) capture = new VideoCapture(selectedCameraId);
-                    capture.ImageGrabbed += VideoCapture_ImageGrabbed;
-                    capture.Start();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void CameraPage_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            capture?.Stop();
-            capture?.Dispose();
-            mat.Dispose();
-            //todo: перевірити чи потрібно ліквідовувати writer
-            DurationTimer.Stop();
-            DurationTimer.Dispose();
-            RecognitionTimer.Stop();
-            RecognitionTimer.Dispose();
-        }
-
-        private void CmbMode_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                if (CmbMode.SelectedItem == null) return;
-                Properties.Settings.Default["Mode"] = (int)CmbMode.SelectedItem;
-                Properties.Settings.Default.Save();
-
-                if (CmbMode.SelectedIndex == (int)Mode.AIMode)
-                {
-                    OnRecognitionTimerStart(true);
-                    isAIModeFlag = true;
-                }
-                else
-                {
-                    OnRecognitionTimerStart(false);
-                    isAIModeFlag = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Mode: " + ex.Message);
-            }
-        }
-
-        private void CmbLoop_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                if (CmbLoop.SelectedItem == null) return;
-                loopRecording = (int)CmbLoop.SelectedItem;
-                Properties.Settings.Default["Loop"] = loopRecording;
-                Properties.Settings.Default.Save();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        string ChangeDurationTime(int durationSeconds)
-        {
-            int minutesAmount = (int)durationSeconds / 60;
-            //if (minutesAmount == loopRecording) durationSeconds = minutesAmount = 0; // starts recording new file
-            string minutes = minutesAmount < 10 ? "0" + minutesAmount : minutesAmount.ToString();
-
-            string seconds = (durationSeconds - minutesAmount * 60).ToString();
-            if (seconds.Length < 2) seconds = "0" + seconds;
-            return $"{minutes}:{seconds}";
         }
 
         string CreateNewFileName()
@@ -357,7 +407,38 @@ namespace ObjectsRecognition.Pages
             return fileName;
         }
 
-        void RecordRegularVideo()
+        double GetBitmapDifference()
+        {
+            if (currentSnapshot == null || previousSnapshot == null) return 0;
+            int summPartialDifferences = 0;
+            int maxPossibleDifference = 16 * 16 * 4 * 255;
+            for (int i = 0; i < 16; i++)
+            {
+                for (int j = 0; j < 16; j++)
+                {
+                    Color pixelOfCurrentBitmap = currentSnapshot.GetPixel(i, j);
+                    Color pixelOfPreviousBitmap = previousSnapshot.GetPixel(i, j);
+                    summPartialDifferences += CalcPixelDifference(pixelOfCurrentBitmap, pixelOfPreviousBitmap);
+                }
+            }
+
+            double diff = (double)summPartialDifferences / (double)maxPossibleDifference;
+            return diff;
+        }
+
+        int CalcPixelDifference(Color firstPixel, Color secondPixel)
+        {
+            var red = Math.Abs((int)firstPixel.R - (int)secondPixel.R);
+            var green = Math.Abs((int)firstPixel.G - (int)secondPixel.G);
+            var blue = Math.Abs((int)firstPixel.B - (int)secondPixel.B);
+            var alpha = Math.Abs((int)firstPixel.A - (int)secondPixel.A);
+
+            return red + green + blue + alpha;
+        }
+
+        void GetPredictions(Bitmap image) => yoloPredictions = scorer.Predict(image);
+
+        void RecordVideo()
         {
             try
             {
@@ -369,14 +450,18 @@ namespace ObjectsRecognition.Pages
 
                 int fourcc = VideoWriter.Fourcc('X', 'V', 'I', 'D');
 
+                string filePath = Path.Combine(outputVideoFolder, CreateNewFileName() + ".mp4");
+                int framesToSave = loopRecording * 60 * (int)fps;
+
                 Task.Run(() =>
                 {
-                    using (writer = new(@"D:\Video\" + CreateNewFileName() + ".mp4", fourcc, fps, size, true)) // "output.avi"
+                    OnDurationTimerStart(true);
+                    using (writer = new(filePath, fourcc, fps, size, true))
                     {
                         durationSeconds = 0;
-                        for (int i = 0; i < 150; i++) // Record 10sec * 15fps = 150 frames
+                        for (int i = 0; i < framesToSave; i++)
                         {
-                            if (!isRecording)
+                            if (!shouldRecord)
                             {
                                 writer.Dispose();
                                 return;
@@ -384,13 +469,16 @@ namespace ObjectsRecognition.Pages
                             capture.Read(mat);
                             if (!mat.IsEmpty)
                             {
-                                writer.Write(mat); // Write the frame to file
+                                writer.Write(mat);
                             }
                         }
                     } // Writer is automatically disposed/closed here
                 }).ContinueWith(t =>
                 {
-                    isRegularModeFlag = true;
+                    isActuallyRecording = false;
+                    bitmapsDifference = 0;
+                    previousSnapshot = null;
+                    OnDurationTimerStart(false);
                 });
             }
             catch
@@ -398,5 +486,32 @@ namespace ObjectsRecognition.Pages
                 throw new Exception("Oops! Something went wront while recording the video.");
             }
         }
+
+        void StartCamera()
+        {
+            try
+            {
+                if (cams.Length == 0)
+                {
+                    throw new Exception("No available cameras.");
+                }
+                else if (CmbCameras.SelectedItem == null)
+                {
+                    throw new Exception("Choose the camera.");
+                }
+                else
+                {
+                    if (capture == null) capture = new VideoCapture(selectedCameraId);
+                    capture.ImageGrabbed += CameraCapture_ImageGrabbed;
+                    capture.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        #endregion
     }
 }

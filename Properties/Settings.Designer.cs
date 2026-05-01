@@ -130,5 +130,17 @@ namespace ObjectsRecognition.Properties {
                 this["Loop"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int MaxStorage {
+            get {
+                return ((int)(this["MaxStorage"]));
+            }
+            set {
+                this["MaxStorage"] = value;
+            }
+        }
     }
 }

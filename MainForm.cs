@@ -9,20 +9,29 @@ namespace ObjectsRecognition
         public MainForm()
         {
             InitializeComponent();
-            SetActivePage(btnCamera.Name);
+            SetActivePage(BtnCamera.Name);
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            ToolTip MainPageTooltip = new ToolTip();
+            MainPageTooltip.SetToolTip(BtnCamera, "Camera Capture");
+            MainPageTooltip.SetToolTip(BtnVideo, "Video Viwer");
+            MainPageTooltip.SetToolTip(BtnFiles, "Files");
+            MainPageTooltip.SetToolTip(BtnSettings, "Settings");
         }
 
         private void btnFiles_Click(object sender, EventArgs e) =>
-            SetActivePage(btnFiles.Name);
+            SetActivePage(BtnFiles.Name);
 
         private void btnPlayVideo_Click(object sender, EventArgs e) =>
-            SetActivePage(btnVideo.Name);
+            SetActivePage(BtnVideo.Name);
 
         private void btnCamera_Click(object sender, EventArgs e) =>
-            SetActivePage(btnCamera.Name);
+            SetActivePage(BtnCamera.Name);
 
         private void btnSettings_Click(object sender, EventArgs e) =>
-            SetActivePage(btnSettings.Name);
+            SetActivePage(BtnSettings.Name);
 
         private void SetActivePage(string buttonName)
         {
@@ -30,32 +39,32 @@ namespace ObjectsRecognition
 
             switch (buttonName)
             {
-                case "btnFiles":
-                    btnFiles.BackColor = Color.Orchid;
-                    btnFiles.ForeColor = Color.WhiteSmoke;
-                    btnVideo.BackColor = btnCamera.BackColor = btnSettings.BackColor = Color.Purple;
-                    btnVideo.ForeColor = btnCamera.ForeColor = btnSettings.ForeColor = Color.Gainsboro;
+                case "BtnFiles":
+                    BtnFiles.BackColor = Color.Orchid;
+                    BtnFiles.ForeColor = Color.WhiteSmoke;
+                    BtnVideo.BackColor = BtnCamera.BackColor = BtnSettings.BackColor = Color.Purple;
+                    BtnVideo.ForeColor = BtnCamera.ForeColor = BtnSettings.ForeColor = Color.Gainsboro;
                     formToOpen = new FilesPage();
                     break;
-                case "btnVideo":
-                    btnVideo.BackColor = Color.Orchid;
-                    btnVideo.ForeColor = Color.WhiteSmoke;
-                    btnFiles.BackColor = btnCamera.BackColor = btnSettings.BackColor = Color.Purple;
-                    btnFiles.ForeColor = btnCamera.ForeColor = btnSettings.ForeColor = Color.Gainsboro;
+                case "BtnVideo":
+                    BtnVideo.BackColor = Color.Orchid;
+                    BtnVideo.ForeColor = Color.WhiteSmoke;
+                    BtnFiles.BackColor = BtnCamera.BackColor = BtnSettings.BackColor = Color.Purple;
+                    BtnFiles.ForeColor = BtnCamera.ForeColor = BtnSettings.ForeColor = Color.Gainsboro;
                     formToOpen = new VideoPage();
                     break;
-                case "btnCamera":
-                    btnCamera.BackColor = Color.Orchid;
-                    btnCamera.ForeColor = Color.WhiteSmoke;
-                    btnVideo.BackColor = btnFiles.BackColor = btnSettings.BackColor = Color.Purple;
-                    btnVideo.ForeColor = btnFiles.ForeColor = btnSettings.ForeColor = Color.Gainsboro;
+                case "BtnCamera":
+                    BtnCamera.BackColor = Color.Orchid;
+                    BtnCamera.ForeColor = Color.WhiteSmoke;
+                    BtnVideo.BackColor = BtnFiles.BackColor = BtnSettings.BackColor = Color.Purple;
+                    BtnVideo.ForeColor = BtnFiles.ForeColor = BtnSettings.ForeColor = Color.Gainsboro;
                     formToOpen = new CameraPage();
                     break;
                 default:
-                    btnSettings.BackColor = Color.Orchid;
-                    btnSettings.ForeColor = Color.WhiteSmoke;
-                    btnVideo.BackColor = btnCamera.BackColor = btnFiles.BackColor = Color.Purple;
-                    btnVideo.ForeColor = btnCamera.ForeColor = btnFiles.ForeColor = Color.Gainsboro;
+                    BtnSettings.BackColor = Color.Orchid;
+                    BtnSettings.ForeColor = Color.WhiteSmoke;
+                    BtnVideo.BackColor = BtnCamera.BackColor = BtnFiles.BackColor = Color.Purple;
+                    BtnVideo.ForeColor = BtnCamera.ForeColor = BtnFiles.ForeColor = Color.Gainsboro;
                     formToOpen = new SettingsPage();
                     break;
             }
@@ -74,5 +83,6 @@ namespace ObjectsRecognition
             formToOpen.BringToFront();
             formToOpen.Show();
         }
+
     }
 }

@@ -28,146 +28,172 @@
         /// </summary>
         private void InitializeComponent()
         {
-            pbVideo = new PictureBox();
-            btnPlay = new Button();
-            btnPause = new Button();
-            btnStop = new Button();
-            txtVideo = new TextBox();
-            trackBarVideo = new TrackBar();
-            btnScreenShot = new Button();
-            lblSpeedLimit = new Label();
-            ((System.ComponentModel.ISupportInitialize)pbVideo).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarVideo).BeginInit();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(VideoPage));
+            PbVideo = new PictureBox();
+            BtnOpenFolder = new Button();
+            BtnPause = new Button();
+            BtnStop = new Button();
+            TrackBarVideo = new TrackBar();
+            BtnScreenShot = new Button();
+            LblSpeedLimit = new Label();
+            ChbAI = new CheckBox();
+            LblTimeCounter = new Label();
+            ((System.ComponentModel.ISupportInitialize)PbVideo).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)TrackBarVideo).BeginInit();
             SuspendLayout();
             // 
-            // pbVideo
+            // PbVideo
             // 
-            pbVideo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            pbVideo.Location = new Point(0, 0);
-            pbVideo.Name = "pbVideo";
-            pbVideo.Size = new Size(998, 405);
-            pbVideo.SizeMode = PictureBoxSizeMode.StretchImage;
-            pbVideo.TabIndex = 0;
-            pbVideo.TabStop = false;
+            PbVideo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            PbVideo.BackColor = SystemColors.Control;
+            PbVideo.Location = new Point(0, 43);
+            PbVideo.Margin = new Padding(3, 2, 3, 2);
+            PbVideo.Name = "PbVideo";
+            PbVideo.Size = new Size(896, 504);
+            PbVideo.SizeMode = PictureBoxSizeMode.StretchImage;
+            PbVideo.TabIndex = 0;
+            PbVideo.TabStop = false;
             // 
-            // btnPlay
+            // BtnOpenFolder
             // 
-            btnPlay.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            btnPlay.FlatAppearance.BorderSize = 0;
-            btnPlay.FlatStyle = FlatStyle.Flat;
-            btnPlay.Image = Properties.Resources.play_circle_outline;
-            btnPlay.Location = new Point(10, 417);
-            btnPlay.Name = "btnPlay";
-            btnPlay.Size = new Size(40, 33);
-            btnPlay.TabIndex = 1;
-            btnPlay.UseVisualStyleBackColor = true;
-            btnPlay.Click += btnPlay_Click;
+            BtnOpenFolder.FlatAppearance.BorderSize = 0;
+            BtnOpenFolder.FlatStyle = FlatStyle.Flat;
+            BtnOpenFolder.Image = (Image)resources.GetObject("BtnOpenFolder.Image");
+            BtnOpenFolder.Location = new Point(10, 9);
+            BtnOpenFolder.Margin = new Padding(3, 2, 3, 2);
+            BtnOpenFolder.Name = "BtnOpenFolder";
+            BtnOpenFolder.Size = new Size(35, 25);
+            BtnOpenFolder.TabIndex = 1;
+            BtnOpenFolder.UseVisualStyleBackColor = true;
+            BtnOpenFolder.Click += BtnOpenFolder_Click;
             // 
-            // btnPause
+            // BtnPause
             // 
-            btnPause.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            btnPause.FlatAppearance.BorderSize = 0;
-            btnPause.FlatStyle = FlatStyle.Flat;
-            btnPause.Image = Properties.Resources.pause;
-            btnPause.Location = new Point(60, 417);
-            btnPause.Name = "btnPause";
-            btnPause.Size = new Size(40, 33);
-            btnPause.TabIndex = 2;
-            btnPause.UseVisualStyleBackColor = true;
-            btnPause.Click += btnPause_Click;
+            BtnPause.FlatAppearance.BorderSize = 0;
+            BtnPause.FlatStyle = FlatStyle.Flat;
+            BtnPause.Image = Properties.Resources.pause;
+            BtnPause.Location = new Point(55, 9);
+            BtnPause.Margin = new Padding(3, 2, 3, 2);
+            BtnPause.Name = "BtnPause";
+            BtnPause.Size = new Size(35, 25);
+            BtnPause.TabIndex = 2;
+            BtnPause.UseVisualStyleBackColor = true;
+            BtnPause.Click += BtnPlayPause_Click;
             // 
-            // btnStop
+            // BtnStop
             // 
-            btnStop.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            btnStop.FlatAppearance.BorderSize = 0;
-            btnStop.FlatStyle = FlatStyle.Flat;
-            btnStop.Image = Properties.Resources.stop;
-            btnStop.Location = new Point(110, 417);
-            btnStop.Name = "btnStop";
-            btnStop.Size = new Size(40, 33);
-            btnStop.TabIndex = 3;
-            btnStop.UseVisualStyleBackColor = true;
-            btnStop.Click += btnStop_Click;
+            BtnStop.FlatAppearance.BorderSize = 0;
+            BtnStop.FlatStyle = FlatStyle.Flat;
+            BtnStop.Image = Properties.Resources.stop;
+            BtnStop.Location = new Point(100, 9);
+            BtnStop.Margin = new Padding(3, 2, 3, 2);
+            BtnStop.Name = "BtnStop";
+            BtnStop.Size = new Size(35, 25);
+            BtnStop.TabIndex = 3;
+            BtnStop.UseVisualStyleBackColor = true;
+            BtnStop.Click += BtnStop_Click;
             // 
-            // txtVideo
+            // TrackBarVideo
             // 
-            txtVideo.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            txtVideo.Enabled = false;
-            txtVideo.Location = new Point(168, 420);
-            txtVideo.Name = "txtVideo";
-            txtVideo.Size = new Size(66, 27);
-            txtVideo.TabIndex = 4;
-            txtVideo.Text = "0:00:00";
+            TrackBarVideo.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            TrackBarVideo.AutoSize = false;
+            TrackBarVideo.BackColor = Color.Purple;
+            TrackBarVideo.Enabled = false;
+            TrackBarVideo.LargeChange = 2;
+            TrackBarVideo.Location = new Point(291, 3);
+            TrackBarVideo.Maximum = 100;
+            TrackBarVideo.Name = "TrackBarVideo";
+            TrackBarVideo.Size = new Size(555, 27);
+            TrackBarVideo.TabIndex = 5;
+            TrackBarVideo.TickFrequency = 20;
+            TrackBarVideo.TickStyle = TickStyle.Both;
             // 
-            // trackBarVideo
+            // BtnScreenShot
             // 
-            trackBarVideo.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            trackBarVideo.LargeChange = 2;
-            trackBarVideo.Location = new Point(303, 408);
-            trackBarVideo.Name = "trackBarVideo";
-            trackBarVideo.Size = new Size(641, 56);
-            trackBarVideo.TabIndex = 5;
-            trackBarVideo.TickFrequency = 20;
-            trackBarVideo.TickStyle = TickStyle.Both;
+            BtnScreenShot.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            BtnScreenShot.FlatAppearance.BorderSize = 0;
+            BtnScreenShot.FlatStyle = FlatStyle.Flat;
+            BtnScreenShot.Image = Properties.Resources.screenshot;
+            BtnScreenShot.Location = new Point(858, 7);
+            BtnScreenShot.Margin = new Padding(3, 2, 3, 2);
+            BtnScreenShot.Name = "BtnScreenShot";
+            BtnScreenShot.Size = new Size(35, 25);
+            BtnScreenShot.TabIndex = 6;
+            BtnScreenShot.UseVisualStyleBackColor = true;
+            BtnScreenShot.Click += BtnScreenShot_Click;
             // 
-            // btnScreenShot
+            // LblSpeedLimit
             // 
-            btnScreenShot.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnScreenShot.FlatAppearance.BorderSize = 0;
-            btnScreenShot.FlatStyle = FlatStyle.Flat;
-            btnScreenShot.Image = Properties.Resources.screenshot;
-            btnScreenShot.Location = new Point(950, 417);
-            btnScreenShot.Name = "btnScreenShot";
-            btnScreenShot.Size = new Size(40, 33);
-            btnScreenShot.TabIndex = 6;
-            btnScreenShot.UseVisualStyleBackColor = true;
-            btnScreenShot.Click += btnScreenShot_Click;
+            LblSpeedLimit.AutoSize = true;
+            LblSpeedLimit.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            LblSpeedLimit.Location = new Point(210, 9);
+            LblSpeedLimit.MinimumSize = new Size(42, 21);
+            LblSpeedLimit.Name = "LblSpeedLimit";
+            LblSpeedLimit.Size = new Size(42, 25);
+            LblSpeedLimit.TabIndex = 7;
+            LblSpeedLimit.TextAlign = ContentAlignment.TopCenter;
             // 
-            // lblSpeedLimit
+            // ChbAI
             // 
-            lblSpeedLimit.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            lblSpeedLimit.AutoSize = true;
-            lblSpeedLimit.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-            lblSpeedLimit.Location = new Point(240, 417);
-            lblSpeedLimit.MinimumSize = new Size(48, 28);
-            lblSpeedLimit.Name = "lblSpeedLimit";
-            lblSpeedLimit.Size = new Size(48, 32);
-            lblSpeedLimit.TabIndex = 7;
-            lblSpeedLimit.TextAlign = ContentAlignment.TopCenter;
+            ChbAI.AutoSize = true;
+            ChbAI.ForeColor = SystemColors.Control;
+            ChbAI.Location = new Point(210, 13);
+            ChbAI.Name = "ChbAI";
+            ChbAI.Size = new Size(71, 19);
+            ChbAI.TabIndex = 8;
+            ChbAI.Text = "AI Mode";
+            ChbAI.UseVisualStyleBackColor = true;
+            ChbAI.CheckedChanged += ChbAI_CheckedChanged;
+            // 
+            // LblTimeCounter
+            // 
+            LblTimeCounter.AutoSize = true;
+            LblTimeCounter.FlatStyle = FlatStyle.Flat;
+            LblTimeCounter.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            LblTimeCounter.ForeColor = Color.WhiteSmoke;
+            LblTimeCounter.Location = new Point(145, 14);
+            LblTimeCounter.Name = "LblTimeCounter";
+            LblTimeCounter.Size = new Size(55, 15);
+            LblTimeCounter.TabIndex = 9;
+            LblTimeCounter.Text = "00:00:00";
             // 
             // VideoPage
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1001, 462);
-            Controls.Add(lblSpeedLimit);
-            Controls.Add(btnScreenShot);
-            Controls.Add(trackBarVideo);
-            Controls.Add(txtVideo);
-            Controls.Add(btnStop);
-            Controls.Add(btnPause);
-            Controls.Add(btnPlay);
-            Controls.Add(pbVideo);
+            BackColor = Color.Purple;
+            ClientSize = new Size(895, 545);
+            Controls.Add(LblTimeCounter);
+            Controls.Add(ChbAI);
+            Controls.Add(LblSpeedLimit);
+            Controls.Add(BtnScreenShot);
+            Controls.Add(TrackBarVideo);
+            Controls.Add(BtnStop);
+            Controls.Add(BtnPause);
+            Controls.Add(BtnOpenFolder);
+            Controls.Add(PbVideo);
             ForeColor = Color.Red;
+            Margin = new Padding(3, 2, 3, 2);
             Name = "VideoPage";
             Text = "Video";
-            Deactivate += VideoPage_Deactivate;
+            FormClosing += VideoPage_FormClosing;
             Load += VideoPage_Load;
-            ((System.ComponentModel.ISupportInitialize)pbVideo).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarVideo).EndInit();
+            ((System.ComponentModel.ISupportInitialize)PbVideo).EndInit();
+            ((System.ComponentModel.ISupportInitialize)TrackBarVideo).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
 
-        private PictureBox pbVideo;
-        private Button btnPlay;
-        private Button btnPause;
-        private Button btnStop;
-        private TextBox txtVideo;
-        private TrackBar trackBarVideo;
-        private Button btnScreenShot;
-        private Label lblSpeedLimit;
+        private PictureBox PbVideo;
+        private Button BtnOpenFolder;
+        private Button BtnPause;
+        private Button BtnStop;
+        private TrackBar TrackBarVideo;
+        private Button BtnScreenShot;
+        private Label LblSpeedLimit;
+        private CheckBox ChbAI;
+        private Label LblTimeCounter;
     }
 }

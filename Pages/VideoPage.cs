@@ -2,63 +2,117 @@
 using Emgu.CV.Structure;
 using ObjectsRecognition.Models;
 using ObjectsRecognition.Services;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Timers;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 
 namespace ObjectsRecognition.Pages
 {
     public partial class VideoPage : Form
     {
-        Bitmap? currentImage = null;
-        string speedLimit = "";
-        DateTime speedLimitChanged = DateTime.Now;
+        #region Private Members
 
         VideoCapture? capture;
-        CommonService commonService = new();
-        double duration;
-        int delay;
-        int filesLimit;
-        int framesPerSecond = 0;
-        int frequency;
-        ImageToRecognize imageToRecognize = new();
-        bool isAutoMode;
-        bool onPause = false;
-        YoloScorer<YoloSignModel> scorer = new YoloScorer<YoloSignModel>("Assets/Models/" +
-                Properties.Settings.Default["CurrentModel"].ToString());
-        List<YoloPrediction> yoloPredictions = [];
+        Mat mat;
+        Bitmap? currentImage;
 
-        private System.Timers.Timer aTimer;
+        bool isAiMode;
+        bool isPredicting;
+
+        readonly CommonService commonService;
+        double duration;
+        int framesPerSecond;
+        int frequency;
+        bool isPlaying = false;
+        YoloScorer<YoloSignModel> scorer;
+        List<PredictionData> predictions;
+
+        #endregion
+
+        #region Ctor
 
         public VideoPage()
         {
             InitializeComponent();
+            mat = new Mat();
+            commonService = new CommonService();
+            framesPerSecond = 15;
+            scorer = new YoloScorer<YoloSignModel>("Assets/Models/" +
+                Properties.Settings.Default["CurrentModel"].ToString());
+            predictions = [];
         }
 
-        private void VideoPage_Load(object sender, EventArgs e)
+        #endregion
+
+        #region UI Events
+
+        void VideoPage_Load(object sender, EventArgs e)
         {
-            delay = int.Parse(Properties.Settings.Default["Delay"].ToString());
-
-            filesLimit = int.Parse(Properties.Settings.Default["FilesLimit"].ToString());
-
-            frequency = Properties.Settings.Default["Frequency"].ToString() switch
-            {
-                "Once/sec" => 1000,
-                "Twice/sec" => 500,
-                _ => 0,
-            };
-            isAutoMode = bool.Parse(Properties.Settings.Default["IsAutoMode"].ToString());
-            Text = isAutoMode ? "Video: Auto Save Mode"
-                : "Video: Play Mode";
-            trackBarVideo.Scroll += new EventHandler(trackBarVideo_Scroll);
-
-            ToolTip playVideoPageTooltip = new ToolTip();
-            playVideoPageTooltip.SetToolTip(btnPlay, "Choose *.mp4 file & Play");
-            playVideoPageTooltip.SetToolTip(btnPause, "Pause | Play");
-            playVideoPageTooltip.SetToolTip(btnStop, "Stop");
-            SetTimer();
+            ToolTip VideoPageTooltip = new ToolTip();
+            VideoPageTooltip.SetToolTip(BtnOpenFolder, "Open Folder and Choose *.mp4 file");
+            VideoPageTooltip.SetToolTip(BtnPause, "Pause | Play");
+            VideoPageTooltip.SetToolTip(BtnStop, "Stop");
+            BtnPause.Image = Properties.Resources.play;
+            LblTimeCounter.Text = "00:00:00";
+            LblTimeCounter.Tag = null;
         }
 
-        private void btnPlay_Click(object sender, EventArgs e)
+        private void VideoPage_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            capture?.Stop();
+            capture?.Dispose();
+        }
+
+        void VideoCapture_ImageGrabbed(object? sender, EventArgs e)
+        {
+            try
+            {
+                if (capture == null) return;
+                capture.Retrieve(mat);
+                currentImage = mat.ToImage<Bgr, byte>().ToBitmap();
+                int delay = (int)(1000 / framesPerSecond);
+                SetTimeOnForm(capture.Get(Emgu.CV.CvEnum.CapProp.PosMsec));
+
+                if (isAiMode)
+                {
+                    if (predictions.Count > 0)
+                        currentImage = (Bitmap)commonService.DrawBoundingBox(currentImage, predictions);
+                    if (!isPredicting)
+                    {
+                        isPredicting = true;
+                        delay = 1;
+                        predictions.Clear();
+
+                        var imageToPredict = currentImage.Width <= 640 || currentImage.Height <= 640 ?
+                            commonService.OverlayImages(new Bitmap(640, 640), currentImage, new Point(0, 0))
+                            : currentImage;
+
+                        Task.Run(() =>
+                        {
+                            GetPredictions(imageToPredict);
+                        })
+                        .ContinueWith(async t =>
+                            {
+                                await Task.Delay(1000);
+                                isPredicting = false;
+                            });
+                    }
+                }
+
+                //todo: optimize the Thread.Sleep(delay) conditionally on isPredicting;
+                Thread.Sleep(delay);
+                PbVideo.Image = currentImage;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Oops! Something went wrong." + ex.Message);
+            }
+        }
+
+        private void ChbAI_CheckedChanged(object sender, EventArgs e) => isAiMode = ChbAI.Checked;
+
+        void BtnOpenFolder_Click(object sender, EventArgs e)
         {
             try
             {
@@ -67,258 +121,44 @@ namespace ObjectsRecognition.Pages
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     capture = new VideoCapture(openFileDialog.FileName);
-                    capture.ImageGrabbed += VideoCapture_ImageGrabbed;// MakePicturesFromVideo;
+                    capture.ImageGrabbed += VideoCapture_ImageGrabbed;
                     framesPerSecond = (int)capture.Get(Emgu.CV.CvEnum.CapProp.Fps);
                     duration = capture.Get(Emgu.CV.CvEnum.CapProp.FrameCount) / framesPerSecond;
                     capture.Start();
+                    isPlaying = true;
+                    BtnPause.Image = Properties.Resources.pause;
+                    LblTimeCounter.Text = "00:00:00";
+                    LblTimeCounter.Tag = null;
+                    TrackBarVideo.Value = 0;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show("Something went wrong.");
+                MessageBox.Show("Oops! Something went wrong. Unable to get video.");
             }
         }
 
-        private void VideoCapture_ImageGrabbedOld(object? sender, EventArgs e)
+        void BtnPlayPause_Click(object sender, EventArgs e)
         {
             try
             {
-                Mat m = new Mat();
-                capture?.Retrieve(m);
-                var image = m.ToImage<Bgr, byte>().ToBitmap();
-                if (isAutoMode)
+                if (capture == null)
                 {
-                    var images = new List<Image>();
-
-                    int frameInterval = (int)Math.Round((float)framesPerSecond * frequency / 1000, 0);
-                    int frameCounter = 0;
-                    int? totalFrames = (int?)capture?.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
-
-                    while (images.Count < filesLimit && frameCounter <= totalFrames)
-                    {
-                        image = capture?.QueryFrame().ToBitmap();
-                        if (!imageToRecognize.InProgress)
-                        {
-                            imageToRecognize.Image = new Bitmap(image);
-                            imageToRecognize.InProgress = true;
-                            Task.Run(() => GetPredictions(imageToRecognize.Image))
-                            .ContinueWith(t => imageToRecognize.InProgress = false);
-                        }
-
-                        if (yoloPredictions.Count > 0) images.Add(commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 0, 0));
-                        capture?.Set(Emgu.CV.CvEnum.CapProp.PosFrames, frameCounter);
-                        capture?.Read(m);
-                        frameCounter += frameInterval;
-                        SetTimeOnForm();
-                        pbVideo.Image = image;
-                    }
-
-                    if (images.Count > 0)
-                    {
-                        string outputFolder = Path.Combine(commonService.GetAbsolutePath("Assets"), "Output");
-                        if (Directory.Exists(outputFolder)) Directory.Delete(outputFolder, true);
-                        if (!Directory.Exists(outputFolder)) Directory.CreateDirectory(outputFolder);
-
-                        string screenshotFilename = string.Empty;
-
-                        foreach (var img in images)
-                        {
-                            screenshotFilename = $"Screen_{DateTime.Now.Day}_{DateTime.Now.Month}_{DateTime.Now.Year}" +
-                            $"_{DateTime.Now.Hour}_{DateTime.Now.Minute}_{DateTime.Now.Second}_{images.IndexOf(img)}.jpg";
-                            img.Save(Path.Combine(outputFolder, Path.GetFileName(screenshotFilename)));
-                        }
-
-                        btnStop_Click(sender, new EventArgs());
-
-                        // Show folder
-                        var psi = new ProcessStartInfo() { FileName = outputFolder, UseShellExecute = true };
-                        Process.Start(psi);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Nothing detected.");
-                    }
-                }
-                else
-                {
-                    //if (!imageToRecognize.InProgress)
-                    //{
-                    //    imageToRecognize.Image = new Bitmap(image);
-                    //    imageToRecognize.InProgress = true;
-                    //    Task.Run(() => GetPredictions(imageToRecognize.Image))
-                    //    .ContinueWith(t => imageToRecognize.InProgress = false);
-                    //}
-                    //pbVideo.Image = yoloPredictions.Count > 0 ? commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 0, 0) : image;
-                    pbVideo.Image = image;
-                    SetTimeOnForm();
-                    //if (delay > 0 && !imageToRecognize.InProgress) Thread.Sleep(delay);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message.Contains("Invoke")) VideoPage_Deactivate(sender, e);
-            }
-        }
-
-        private void VideoCapture_ImageGrabbed(object? sender, EventArgs e)
-        {
-            try
-            {
-                Mat m = new Mat();
-                capture?.Retrieve(m);
-                currentImage = m.ToImage<Bgr, byte>().ToBitmap();
-
-                int frameInterval = (int)Math.Round((float)framesPerSecond * frequency / 1000, 0);
-                int frameCounter = 0;
-                int? totalFrames = (int?)capture?.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
-                var imageHasPredictions = false;
-
-                if (isAutoMode)
-                {
-                    var images = new List<Image>();
-                    while (images.Count < filesLimit && frameCounter <= totalFrames)
-                    {
-                        currentImage = capture?.QueryFrame().ToBitmap();
-                        if (!imageToRecognize.InProgress)
-                        {
-                            imageToRecognize.Image = new Bitmap(currentImage);
-                            imageToRecognize.InProgress = true;
-                            Task.Run(() => GetPredictions(imageToRecognize.Image))
-                            .ContinueWith(t => imageToRecognize.InProgress = false);
-                        }
-
-                        if (yoloPredictions.Count > 0) images.Add(commonService.DrawBoundingBox(currentImage, yoloPredictions, 0, 0, 0, 0));
-                        capture?.Set(Emgu.CV.CvEnum.CapProp.PosFrames, frameCounter);
-                        capture?.Read(m);
-                        frameCounter += frameInterval;
-                        SetTimeOnForm();
-                        pbVideo.Image = currentImage;
-                    }
-
-                    if (images.Count > 0)
-                    {
-                        string outputFolder = Path.Combine(commonService.GetAbsolutePath("Assets"), "Output");
-                        if (Directory.Exists(outputFolder)) Directory.Delete(outputFolder, true);
-                        if (!Directory.Exists(outputFolder)) Directory.CreateDirectory(outputFolder);
-
-                        string screenshotFilename = string.Empty;
-
-                        foreach (var img in images)
-                        {
-                            screenshotFilename = $"Screen_{DateTime.Now.Day}_{DateTime.Now.Month}_{DateTime.Now.Year}" +
-                            $"_{DateTime.Now.Hour}_{DateTime.Now.Minute}_{DateTime.Now.Second}_{images.IndexOf(img)}.jpg";
-                            img.Save(Path.Combine(outputFolder, Path.GetFileName(screenshotFilename)));
-                        }
-
-                        btnStop_Click(sender, new EventArgs());
-
-                        // Show folder
-                        var psi = new ProcessStartInfo() { FileName = outputFolder, UseShellExecute = true };
-                        Process.Start(psi);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Nothing detected.");
-                    }
-                }
-                else
-                {
-                    //if (!imageToRecognize.InProgress)
-                    //{
-                    //    imageToRecognize.Image = new Bitmap(image);
-                    //    imageToRecognize.InProgress = true;
-                    //    Task.Run(() => GetPredictions(imageToRecognize.Image))
-                    //    .ContinueWith(t => imageToRecognize.InProgress = false);
-                    //}
-                    //pbVideo.Image = yoloPredictions.Count > 0 ? commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 0, 0) : image;
-                    pbVideo.Image = currentImage;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message.Contains("Invoke")) VideoPage_Deactivate(sender, e);
-            }
-        }
-
-        // Event handler that is called every time the interval elapses.
-        private void OnTimedEvent(Object source, ElapsedEventArgs e)
-        {
-            if (currentImage == null) return;
-
-            TimeSpan duration = DateTime.Now - speedLimitChanged;
-            if (duration.TotalSeconds < 8)
-            {
-                return;
-            }
-            else
-            {
-                speedLimit = "";
-                Invoke(new Action(() => { lblSpeedLimit.Text = speedLimit; }));
-            }
-
-            // Divide image to frames 640x640 and predict objects on each frame
-            Bitmap sourceBitmap = currentImage;
-            int rows = Convert.ToInt32(Math.Floor((decimal)sourceBitmap.Height / 640));
-            int columns = Convert.ToInt32(Math.Floor((decimal)sourceBitmap.Width / 640));
-            int paddingLeft = (sourceBitmap.Width - columns * 640) / 2; // x axle
-            int paddingTop = (sourceBitmap.Height - rows * 640) / 2; // y axle
-            bool hasPredection = false;
-
-            SetTimeOnForm();
-
-            for (int r = 1; r <= rows; r++)
-            {
-                if (hasPredection)
-                {
-                    if (speedLimit != yoloPredictions[0].Label.Category)
-                    {
-                        speedLimit = yoloPredictions[0].Label.Category;
-                        Invoke(new Action(() => { lblSpeedLimit.Text = speedLimit; }));
-                    }
-                    yoloPredictions.Clear();
-                    speedLimitChanged = DateTime.Now;
+                    MessageBox.Show("No choosed video. Click Open Folder button and select .mp4 file.");
                     return;
                 }
-                for (int c = 1; c <= columns; c++)
-                {
-                    Rectangle cropRectangle = new((c - 1) * 640 + paddingLeft, (r - 1) * 640 + paddingTop, 640, 640);
-                    Bitmap? croppedBitmap = sourceBitmap.Clone(cropRectangle, sourceBitmap.PixelFormat);
-                    yoloPredictions = scorer.Predict(croppedBitmap);
-                    // Draw labels and bounding boxes
-                    if (yoloPredictions.Count > 0)
-                    {
-                        hasPredection = true;
-                        croppedBitmap.Dispose();
-                        break;
-                    }
-                }
+
+                if (isPlaying) capture.Pause(); else capture.Start();
+                isPlaying = !isPlaying;
+                BtnPause.Image = isPlaying ? Properties.Resources.pause : Properties.Resources.play;
             }
-        }
-
-        private void SetTimeOnForm()
-        {
-            var position = capture.Get(Emgu.CV.CvEnum.CapProp.PosMsec);
-            var trackValue = (int)Math.Floor(trackBarVideo.Maximum * position * 1.05 / 1000 / duration);
-            Invoke(new Action(() => { if (trackValue >= trackBarVideo.Value) trackBarVideo.Value = trackValue; }));
-            TimeSpan time = TimeSpan.FromMilliseconds(position);
-            Invoke(new Action(() => { txtVideo.Text = $"{time:hh\\:mm\\:ss}"; }));
-        }
-
-        private void btnPause_Click(object sender, EventArgs e)
-        {
-            try
+            catch
             {
-                if (onPause) capture?.Start(); else capture?.Pause();
-                onPause = !onPause;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show("Oops! Something went wrong while playing.");
             }
         }
 
-        private void btnStop_Click(object sender, EventArgs e)
+        void BtnStop_Click(object? sender, EventArgs e)
         {
             try
             {
@@ -326,10 +166,11 @@ namespace ObjectsRecognition.Pages
                 capture?.Dispose();
                 capture = null;
 
-                pbVideo.Image?.Dispose();
-                pbVideo.Image = null;
+                PbVideo.Image?.Dispose();
+                PbVideo.Image = null;
 
-                framesPerSecond = 0;
+                isPlaying = false;
+                BtnPause.Image = Properties.Resources.play;
             }
             catch
             {
@@ -337,36 +178,12 @@ namespace ObjectsRecognition.Pages
             }
         }
 
-        private void trackBarVideo_Scroll(object sender, EventArgs e)
+        void BtnScreenShot_Click(object sender, EventArgs e)
         {
-            if (capture == null) return;
-            try
-            {
-                capture.Pause();
-                var timeFor1Element = duration * 1000 / trackBarVideo.Maximum;
-                capture.Set(Emgu.CV.CvEnum.CapProp.PosMsec, trackBarVideo.Value * timeFor1Element);
-                capture.Start();
-            }
-            catch { }
-        }
-
-        private void GetPredictions(Bitmap image)
-        {
-            //var startDate = DateTime.Now;
-            yoloPredictions = scorer.Predict(image);
-            if (!isAutoMode) Thread.Sleep(frequency);
-            //var endDate = DateTime.Now;
-            //var execTime = endDate.Subtract(startDate).TotalSeconds;
-            //statusBarMessage = $"Mode: CPU | Objects: {yoloPredictions.Count} | Recognition time: {Math.Round(execTime, 3)} sec";
-        }
-
-        private void btnScreenShot_Click(object sender, EventArgs e)
-        {
-            if (pbVideo.Image == null) return;
+            if (PbVideo.Image == null) return;
             try
             {
                 string outputFolder = Path.Combine(commonService.GetAbsolutePath("Assets"), "Output");
-                //if (Directory.Exists(outputFolder)) Directory.Delete(outputFolder, true);
                 if (!Directory.Exists(outputFolder)) Directory.CreateDirectory(outputFolder);
 
                 string screenshotFilename = $"Screen_{DateTime.Now.Day}__{DateTime.Now.Month}_{DateTime.Now.Year}" +
@@ -379,16 +196,92 @@ namespace ObjectsRecognition.Pages
                 //pbVideo.Image = yoloPredictions.Count > 0 ?
                 //    commonService.DrawBoundingBox(image, yoloPredictions, 0, 0, 0, 0) : image;
 
-                pbVideo.Image.Save(Path.Combine(outputFolder, Path.GetFileName(screenshotFilename)));
+                PbVideo.Image.Save(Path.Combine(outputFolder, Path.GetFileName(screenshotFilename)));
                 //if (!isAutoMode) MessageBox.Show("Image has been saved to ./Assets/Output folder.");
             }
             catch
             {
-                MessageBox.Show("Oops! Something went wrong.");
+                MessageBox.Show("Oops! Something went wrong while screen is processing.");
             }
         }
 
-        private void MakePicturesFromVideo(object? sender, EventArgs e)
+        #endregion
+
+        #region Helpers
+
+        /// <summary>
+        /// 1080p (1920x1080): Сучасний стандарт для професійних відеодзвінків, створення контенту та потокової передачі, що пропонує збалансоване, чітке зображення.
+        /// 720p(1280x720) : Підходить для повсякденного використання, зменшує пропускну здатність та навантаження на процесор на старих комп'ютерах.
+        /// 4K(3840x2160) : Орієнтовано на професійних стрімерів або тих, кому потрібно обрізати/масштабувати без втрати якості
+        /// </summary>
+        /// <param name="image"></param>
+        void GetPredictions(Bitmap image)
+        {
+            var startDate = DateTime.Now;
+            try
+            {
+                if (image.Width <= 640 || image.Height <= 640)
+                {
+                    var yoloPredictions = scorer.Predict(image);
+                    if (yoloPredictions.Count > 0)
+                    {
+                        foreach (var partialYoloPrediction in yoloPredictions)
+                        {
+                            var predictionData = new PredictionData(partialYoloPrediction.Label.Name,
+                                partialYoloPrediction.Label.Category,
+                                partialYoloPrediction.Rectangle.X,
+                                partialYoloPrediction.Rectangle.Y,
+                                partialYoloPrediction.Rectangle.Width,
+                                partialYoloPrediction.Rectangle.Height,
+                                partialYoloPrediction.Score);
+                            predictions.Add(predictionData);
+                        }
+                    }
+                }
+                else
+                {
+                    int rows = Convert.ToInt32(Math.Floor((decimal)image.Height / 640));
+                    int columns = Convert.ToInt32(Math.Floor((decimal)image.Width / 640));
+                    int paddingLeft = (image.Width - columns * 640) / 2; // x axle
+                    int paddingTop = (image.Height - rows * 640) / 2; // y axle
+
+                    for (int r = 1; r <= rows; r++)
+                    {
+                        for (int c = 1; c <= columns; c++)
+                        {
+                            Rectangle cropRectangle = new((c - 1) * 640 + paddingLeft, (r - 1) * 640 + paddingTop, 640, 640);
+                            Bitmap? croppedBitmap = image.Clone(cropRectangle, image.PixelFormat);
+
+                            var yoloPredictions = scorer.Predict(croppedBitmap);
+
+                            if (yoloPredictions.Count > 0)
+                            {
+                                foreach (var yoloPrediction in yoloPredictions)
+                                {
+                                    var predictionData = new PredictionData(yoloPrediction.Label.Name,
+                                        yoloPrediction.Label.Category,
+                                        paddingLeft + yoloPrediction.Rectangle.X + (c - 1) * 640,
+                                        paddingTop + yoloPrediction.Rectangle.Y + (r - 1) * 640,
+                                        yoloPrediction.Rectangle.Width,
+                                        yoloPrediction.Rectangle.Height,
+                                        yoloPrediction.Score);
+                                    predictions.Add(predictionData);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Oops! Something went wrong while predicting." + ex.Message);
+            }
+            var endDate = DateTime.Now;
+            var execTime = endDate.Subtract(startDate).TotalMilliseconds;
+            Debug.WriteLine($"Recognition time, ms: {execTime}");
+        }
+
+        void MakePicturesFromVideo(object? sender, EventArgs e)
         {
             Mat m = new Mat();
             capture?.Retrieve(m);
@@ -428,49 +321,34 @@ namespace ObjectsRecognition.Pages
                 frameCounter += frameInterval;
                 images.Clear();
 
-                SetTimeOnForm();
+                SetTimeOnForm(capture.Get(Emgu.CV.CvEnum.CapProp.PosMsec));
             }
 
-            btnStop_Click(sender, new EventArgs());
+            BtnStop_Click(null, new EventArgs());
 
             // Show folder
             var psi = new ProcessStartInfo() { FileName = outputFolder, UseShellExecute = true };
             Process.Start(psi);
         }
 
-        private void VideoPage_Deactivate(object sender, EventArgs e)
+        void SetTimeOnForm(double position)
         {
-            try
+            if (LblTimeCounter.Tag == null)
             {
-                capture?.Stop();
-                capture?.Dispose();
-                capture = null;
-
-                pbVideo.Image?.Dispose();
-                pbVideo.Image = null;
-
-                framesPerSecond = 0;
-                this.Dispose();
+                LblTimeCounter.Tag = position;
+                return;
             }
-            catch
+            if (position > (double)LblTimeCounter.Tag)
             {
-                MessageBox.Show("Oops! Something went wrong.");
+                var trackValue = (int)Math.Floor(TrackBarVideo.Maximum * position / 1000 / duration);
+                Invoke(new Action(() => { TrackBarVideo.Value = trackValue; }));
+
+                TimeSpan time = TimeSpan.FromMilliseconds(position + 1000);
+                Invoke(new Action(() => { LblTimeCounter.Text = $"{time:hh\\:mm\\:ss}"; }));
+                LblTimeCounter.Tag = position + 1000;
             }
         }
 
-        private void SetTimer()
-        {
-            // Create a timer with a two second interval (2000 milliseconds).
-            aTimer = new System.Timers.Timer(2000);
-
-            // Hook up the Elapsed event for the timer.
-            aTimer.Elapsed += OnTimedEvent;
-
-            // Set AutoReset to true to make the timer run repeatedly.
-            aTimer.AutoReset = true;
-
-            // Start the timer.
-            aTimer.Enabled = true;
-        }
+        #endregion
     }
 }
